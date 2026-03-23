@@ -1,7 +1,7 @@
 ---
 name: character
 description: Guides players through creating Old-School Essentials (OSE) characters step-by-step, including rolling ability scores, choosing classes, buying equipment, and completing character sheets. Use when creating a new OSE character, rolling up a PC, generating a character, or creating an entire party.
-allowed-tools: WebFetch, Bash, AskUserQuestion, Read, Write, Edit, Glob
+allowed-tools: WebFetch Bash AskUserQuestion Read Write Edit Glob
 ---
 
 # Character creation for Old-School Essentials
@@ -13,14 +13,14 @@ Guide players through creating OSE characters using the rules from the web-based
 The [referee’s constitution](../referee/references/constitution.md) governs all behavior. Additionally:
 
 1. **Look up rules from SRD** — read `plugins/bx-referee/skills/referee/references/srd_map.md` to find the right file, then Read it
-2. **Roll dice with roll.py** — use `uv run plugins/bx-referee/skills/referee/roll.py "<expr>"`
+2. **Roll dice with roll.py** — use `uv run plugins/bx-referee/skills/referee/scripts/roll.py "<expr>"`
 3. **Use AskUserQuestion** at each character creation decision point
 
 ## The character creation process
 
 ### 0. Preparation
 
-- **Read from SRD**: `plugins/bx-referee/skills/referee/references/srd/ Creating_a_Character.md`
+- **Read from SRD**: `plugins/bx-referee/skills/referee/references/srd/Creating_a_Character.md`
 - Run `roll.py -h` to learn command format
 
 ### 0.5. House rules
@@ -34,7 +34,7 @@ The [referee’s constitution](../referee/references/constitution.md) governs al
 
 - Use `4d6Lx6` if the player chose "4d6 drop lowest" in step 0.5, otherwise use `3d6x6`
 - Roll with Bash, present results (you may offer reroll per sub-par characters section in Creating_a_Character)
-- **Read from SRD**: `plugins/bx-referee/skills/referee/references/srd/ Ability_Scores.md` for modifiers
+- **Read from SRD**: `plugins/bx-referee/skills/referee/references/srd/Ability_Scores.md` for modifiers
 - **AskUserQuestion**: Offer reroll per optional rules in SRD
 
 ### 2. Choose class
@@ -66,18 +66,18 @@ The [referee’s constitution](../referee/references/constitution.md) governs al
 
 ### 8. Choose alignment
 
-- **Read from SRD**: `plugins/bx-referee/skills/referee/references/srd/ Alignment.md`
+- **Read from SRD**: `plugins/bx-referee/skills/referee/references/srd/Alignment.md`
 - **AskUserQuestion**: Present alignment options
 
 ### 9. Note languages
 
-- **Read from SRD**: `plugins/bx-referee/skills/referee/references/srd/ Languages.md`
+- **Read from SRD**: `plugins/bx-referee/skills/referee/references/srd/Languages.md`
 - **AskUserQuestion**: Select bonus languages if INT modifier grants them
 
 ### 10. Buy equipment
 
 - Roll starting gold per formula in SRD
-- **Read from SRD**: `plugins/bx-referee/skills/referee/references/srd/ Weapons_and_Armour.md` and `Adventuring_Gear.md`
+- **Read from SRD**: `plugins/bx-referee/skills/referee/references/srd/Weapons_and_Armour.md` and `Adventuring_Gear.md`
 - **AskUserQuestion**: Offer standard kit or manual selection options
   - **AskUserQuestion**: If the user chose standard kit, present a class-appropriate kit for approval
   - **AskUserQuestion**: If the user chose manual select, use multiSelect to present separate tabs for weapons, armor, and gear, each with a complete checkbox-based multi-select list of items from the SRD. Each multiSelect item list should include only the item names and their cost in "Item Name (cost)" format - omit descriptions.
@@ -113,7 +113,7 @@ Present completed character concisely. Add sections like THIEF SKILLS, CLERIC TU
 
 ## After completion
 
-- **AskUserQuestion**: Save character? If an adventure is active (check conversation context for adventure path), append the character block to that adventure's `PARTY.md`. Otherwise, write to `characters/[name]-[class].md`.
+- **AskUserQuestion**: Save character? If an adventure is active (check conversation context for adventure path), append the character block to that adventure's `PARTY.md`. Otherwise, write to `<game-root>/characters/[name]-[class].md`. The game root is passed as an argument (e.g. `Skill "character" "/Users/player/osr-games"`). If not available from arguments or conversation context, **AskUserQuestion** for the game directory.
 - When appending to PARTY.md, use `HP [value]/[value]` format (current/max) and add a blank line before the new character block.
 
 Example character block:

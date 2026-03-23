@@ -5,7 +5,7 @@ description: >-
   areas, wandering monster checks, resource tracking, searching,
   doors, and traps. Use when actively exploring a dungeon or
   wilderness location during an adventure.
-allowed-tools: WebFetch, Bash, AskUserQuestion, Read, Edit, Glob, Skill
+allowed-tools: WebFetch Bash AskUserQuestion Read Edit Glob Skill
 ---
 
 # Dungeon exploration for Old-School Essentials
@@ -21,20 +21,20 @@ The [referee's constitution](../referee/references/constitution.md) governs all 
 
 ## Tool paths
 
-- **Dice roller**: `plugins/bx-referee/skills/referee/roll.py`
+- **Dice roller**: `plugins/bx-referee/skills/referee/scripts/roll.py`
 - **SRD map**: `plugins/bx-referee/skills/referee/references/srd_map.md` (rules, classes, equipment, treasure)
 - **SRD monsters**: `plugins/bx-referee/skills/referee/references/srd_monsters.md`
 - **SRD spells**: `plugins/bx-referee/skills/referee/references/srd_spells.md`
 
 ```bash
-uv run plugins/bx-referee/skills/referee/roll.py "1d6"
+uv run plugins/bx-referee/skills/referee/scripts/roll.py "1d6"
 ```
 
 ## Setup (on entry)
 
-1. Determine the active adventure directory from conversation context or Glob `adventures/*/SESSION.md`
-2. Read `PARTY.md` — cache party composition, HP, equipment, light sources, movement rates
-3. Read `SESSION.md` — current location, turn, hour, and the **module file path**
+1. Determine the active adventure directory from conversation context. If not available, read the **game root** path from conversation context or **AskUserQuestion**, then Glob `<game-root>/adventures/*/SESSION.md`
+2. Read `SESSION.md` — current location, turn, hour, **game root**, and the **module file path**
+3. Read `PARTY.md` — cache party composition, HP, equipment, light sources, movement rates
 4. Read `LOCATIONS.md` — available keyed locations with page/section references
 5. Read the SRD Encounters page: `plugins/bx-referee/skills/referee/references/srd/Encounters.md`
 

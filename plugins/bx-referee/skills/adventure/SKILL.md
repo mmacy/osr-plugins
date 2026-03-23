@@ -5,8 +5,7 @@ description: >-
   PDFs, build party rosters, resume sessions with recaps, and save
   session state. Use when starting a new adventure, continuing an
   existing one, or saving/ending a session.
-argument-hint: "[new|continue|save]"
-allowed-tools: WebFetch, Bash, AskUserQuestion, Read, Write, Edit, Glob, Skill
+allowed-tools: WebFetch Bash AskUserQuestion Read Write Edit Glob Skill
 ---
 
 # Adventure manager for Old-School Essentials
@@ -24,10 +23,16 @@ The [referee's constitution](../referee/references/constitution.md) governs all 
 
 ## Tool paths
 
-- **Dice roller**: `plugins/bx-referee/skills/referee/roll.py`
+- **Dice roller**: `plugins/bx-referee/skills/referee/scripts/roll.py`
 - **SRD map**: `plugins/bx-referee/skills/referee/references/srd_map.md` (rules, classes, equipment, treasure)
 - **SRD monsters**: `plugins/bx-referee/skills/referee/references/srd_monsters.md`
 - **SRD spells**: `plugins/bx-referee/skills/referee/references/srd_spells.md`
+
+## Game directory
+
+The **game directory** (`<game-root>`) is passed as part of the arguments (e.g. `new /Users/player/osr-games`). If not provided, **AskUserQuestion** to ask where adventures and characters should be saved. Suggest `~/osr-games` or the current working directory as a default.
+
+All `adventures/` and `characters/` paths are relative to this game root. Never write game files to the plugin cache directory.
 
 ## Workflow: New adventure
 
@@ -44,7 +49,7 @@ Triggered by `/adventure new` or routed from referee.
 ### Step 3: Create adventure directory
 
 ```bash
-mkdir -p adventures/<name>
+mkdir -p <game-root>/adventures/<name>
 ```
 
 ### Step 4: Read the module and build LOCATIONS.md
@@ -86,17 +91,17 @@ Write an empty party file:
 
 Before creating new characters, check for existing ones:
 
-1. **Check for existing parties.** Glob `adventures/*/PARTY.md` for parties from other adventures. If any exist, read each and build a list of candidates. Rank them by:
+1. **Check for existing parties.** Glob `<game-root>/adventures/*/PARTY.md` for parties from other adventures. If any exist, read each and build a list of candidates. Rank them by:
    - Most recently modified (suggests active play)
    - Party size appropriate for the module's recommended level/count
    - Characters that are alive (no `STATUS: DEAD`)
-2. **Check for standalone characters.** Glob `characters/*.md` for individual character files.
+2. **Check for standalone characters.** Glob `<game-root>/characters/*.md` for individual character files.
 3. **Present options via AskUserQuestion.** Offer choices based on what was found:
    - If existing parties were found: "Use [party name] from [adventure]?" — show the top candidate first with a brief roster summary (names, classes, levels)
    - If standalone characters were found: "Add existing characters to the party?"
    - Always include: "Create new characters"
 4. **If using an existing party:** Copy the character blocks into this adventure's `PARTY.md`. Reset current HP to max and clear any temporary conditions — this is a fresh adventure.
-5. **If creating new characters:** Ask how many, then call `Skill "character"`. Append each completed character to `adventures/<name>/PARTY.md`.
+5. **If creating new characters:** Ask how many, then call `Skill "character" "<game-root>"`. Append each completed character to `<game-root>/adventures/<name>/PARTY.md`.
 6. **If mixing:** Allow the player to select some existing characters and create additional ones to fill out the party.
 
 ### Step 7: Initialize SESSION.md
@@ -104,6 +109,7 @@ Before creating new characters, check for existing ones:
 Write from template (see SESSION.md format below), filling in:
 
 - Adventure name
+- Game root (absolute path to the game directory)
 - Module file path (absolute path to the module file)
 - Today's date
 - **Current situation**: "The party has arrived at [adventure starting location]." — nothing more. Do NOT summarize module background, describe the environment, or include any DM-only information. The exploration skill will describe the scene when play begins.
@@ -131,7 +137,7 @@ Triggered by `/adventure continue` or routed from referee.
 
 ### Step 1: List adventures
 
-Glob `adventures/*/SESSION.md` to find adventures with saved state.
+Glob `<game-root>/adventures/*/SESSION.md` to find adventures with saved state. The game root is passed as part of the arguments (e.g. `continue /Users/player/osr-games`). If not provided, **AskUserQuestion** for the game directory.
 
 **AskUserQuestion**: which adventure to continue?
 
@@ -185,6 +191,7 @@ Report what was saved: adventure name, location, turn, party status.
 
 ## Adventure
 
+- Game root: `<absolute path to game directory>`
 - Module: `<absolute path to module file>`
 - Started: <date>
 
@@ -235,13 +242,16 @@ See [PARTY.md](PARTY.md) for current roster and stats.
 ## Adventure directory structure
 
 ```
-adventures/<adventure-name>/
-├── LOCATIONS.md
-├── PARTY.md
-└── SESSION.md
+<game-root>/
+├── adventures/<adventure-name>/
+│   ├── LOCATIONS.md
+│   ├── PARTY.md
+│   └── SESSION.md
+└── characters/
+    └── <name>-<class>.md
 ```
 
-The module file stays at its original location on disk. SESSION.md records the path.
+The module file stays at its original location on disk. SESSION.md records both the game root and the module path.
 
 ## Error handling
 
