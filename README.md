@@ -1,6 +1,6 @@
 # OSR plugins
 
-A plugin marketplace for AI-powered Old-School Renaissance tabletop RPG tools for [Claude Code](https://code.claude.com/docs/en/plugins).
+A plugin marketplace for AI-powered Old-School Renaissance tabletop RPG tools for [Claude Code](https://code.claude.com/docs).
 
 ## Install
 
