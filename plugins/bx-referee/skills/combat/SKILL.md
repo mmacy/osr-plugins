@@ -1,8 +1,7 @@
 ---
 name: combat
 description: Resolve OSE combat — initiative, attacks, damage, saving throws, morale, spells, and death. Use when combat begins or a combat handoff block is provided.
-argument-hint: "[monster] [count] [environment] [distance]"
-allowed-tools: WebFetch, Bash, AskUserQuestion, Read, Glob, Edit
+allowed-tools: WebFetch Bash AskUserQuestion Read Glob Edit
 ---
 
 # Combat resolution for Old-School Essentials
@@ -14,13 +13,13 @@ Resolve combat step-by-step using SRD rules. Accepts the ENCOUNTER HANDOFF: COMB
 The [referee's constitution](../referee/references/constitution.md) governs all behavior. Additionally:
 
 1. **Look up rules from SRD** — read the SRD map or monsters submap to find the right file, then Read it
-2. **Roll dice with roll.py** — use `uv run plugins/bx-referee/skills/referee/roll.py "<expr>"`
+2. **Roll dice with roll.py** — use `uv run plugins/bx-referee/skills/referee/scripts/roll.py "<expr>"`
 3. **Use AskUserQuestion** only for administrative setup. During combat, present the status and wait for the player to declare actions
 4. **Update PARTY.md** — track HP changes, expended resources, and death in the adventure's `PARTY.md`
 
 ## Tool paths
 
-- **Dice roller**: `plugins/bx-referee/skills/referee/roll.py`
+- **Dice roller**: `plugins/bx-referee/skills/referee/scripts/roll.py`
 - **SRD map**: `plugins/bx-referee/skills/referee/references/srd_map.md` (rules, classes, equipment, treasure)
 - **SRD monsters**: `plugins/bx-referee/skills/referee/references/srd_monsters.md`
 - **SRD spells**: `plugins/bx-referee/skills/referee/references/srd_spells.md`
@@ -40,7 +39,7 @@ This skill accepts either:
 - Read SRD rules: use the SRD map to find and Read `Combat.md`, `Combat_Tables.md`, `Morale_(Optional_Rule).md`
 - Read the monster page: use the monsters submap to find the file path, then Read it
 
-- Read party data from the active adventure's `PARTY.md` (determine adventure path from conversation context or Glob `adventures/*/PARTY.md`)
+- Read party data from the active adventure's `PARTY.md` (determine adventure path from conversation context — the game root and adventure name are in SESSION.md)
 - Roll monster HP individually using their HD (if not already rolled from handoff)
 - Present the battlefield summary: who's fighting, distance, surprise state
 
@@ -113,7 +112,7 @@ Read the spells submap (`plugins/bx-referee/skills/referee/references/srd_spells
 Use the attack procedure from `srd/Combat.md` and the attack matrix from `srd/Combat_Tables.md`. For each attack:
 
 1. Look up THAC0 and calculate target number
-2. Roll 1d20: `uv run plugins/bx-referee/skills/referee/roll.py "1d20"`
+2. Roll 1d20: `uv run plugins/bx-referee/skills/referee/scripts/roll.py "1d20"`
 3. Apply modifiers (STR for melee, DEX for ranged, magic, situational)
 4. On hit, roll damage and subtract from target HP
 

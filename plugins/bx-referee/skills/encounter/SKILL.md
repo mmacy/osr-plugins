@@ -1,8 +1,7 @@
 ---
 name: encounter
 description: Resolve OSE encounters — surprise, distance, reaction, monster stats, flee/evasion, parley. Use when the party encounters monsters or another entity.
-argument-hint: "[monster] [count] [dungeon|wilderness]"
-allowed-tools: WebFetch, Bash, AskUserQuestion, Read, Glob
+allowed-tools: WebFetch Bash AskUserQuestion Read Glob
 ---
 
 # Encounter resolution for Old-School Essentials
@@ -14,18 +13,18 @@ Resolve encounters step-by-step using SRD rules, from surprise through reaction 
 The [referee's constitution](../referee/references/constitution.md) governs all behavior. Additionally:
 
 1. **Look up rules from SRD** — read the SRD map or monsters submap to find the right file, then Read it
-2. **Roll dice with roll.py** — use `uv run plugins/bx-referee/skills/referee/roll.py "<expr>"`
+2. **Roll dice with roll.py** — use `uv run plugins/bx-referee/skills/referee/scripts/roll.py "<expr>"`
 3. **Use AskUserQuestion** only for administrative setup. During gameplay, narrate the situation and wait for the player to respond
 
 ## Tool paths
 
-- **Dice roller**: `plugins/bx-referee/skills/referee/roll.py`
+- **Dice roller**: `plugins/bx-referee/skills/referee/scripts/roll.py`
 - **SRD map**: `plugins/bx-referee/skills/referee/references/srd_map.md` (rules, classes, equipment, treasure)
 - **SRD monsters**: `plugins/bx-referee/skills/referee/references/srd_monsters.md`
 - **SRD spells**: `plugins/bx-referee/skills/referee/references/srd_spells.md`
 
 ```bash
-uv run plugins/bx-referee/skills/referee/roll.py "2d6"
+uv run plugins/bx-referee/skills/referee/scripts/roll.py "2d6"
 ```
 
 ## Input format
@@ -43,7 +42,7 @@ The GM invokes with `/encounter <monster> <count> <environment>`, e.g. `/encount
 - Read SRD rules: use the SRD map to find and Read `Encounters.md`, `Evasion_and_Pursuit.md`, `Morale_(Optional_Rule).md`
 - Read the monster page: use the monsters submap to find the file path, then Read it
 
-- Read party data from the active adventure's `PARTY.md` (determine adventure path from conversation context or Glob `adventures/*/PARTY.md`)
+- Read party data from the active adventure's `PARTY.md` (determine adventure path from conversation context — the game root and adventure name are in SESSION.md)
 
 ### Step 1: Present monster stats
 

@@ -55,7 +55,7 @@ Use this map to find the right reference file to Read. For monsters and spells, 
 - [Combat](srd/Combat.md) — Combat sequence, attack rolls, damage, morale, movement in combat
 - [Combat Tables](srd/Combat_Tables.md) — Attack matrix (THAC0 vs AC), monster saving throw table
 - [Saving Throws](srd/Saving_Throws.md) — Five categories (D/W/P/B/S), when to roll, success effects
-- [Morale (Optional Rule)](srd/Morale_%28Optional_Rule%29.md) — Morale rating, checks, when to check, mercenary/retainer morale
+- [Morale (Optional Rule)](srd/Morale_(Optional_Rule).md) — Morale rating, checks, when to check, mercenary/retainer morale
 - [Evasion and Pursuit](srd/Evasion_and_Pursuit.md) — Dungeon/wilderness/waterborne evasion rules, pursuit procedures
 - [Other Combat Issues](srd/Other_Combat_Issues.md) — Attacking from behind, blindness, subduing, unarmed, water combat
 - [Checks, Damage, Saves](srd/Checks%2C_Damage%2C_Saves.md) — Ability checks, damage/healing/death, saving throws (index page)
