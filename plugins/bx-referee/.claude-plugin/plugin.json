@@ -1,7 +1,6 @@
 {
   "name": "bx-referee",
   "description": "B/X Referee — run Old-School Essentials tabletop RPG sessions with an AI referee",
-  "version": "0.1.1",
   "author": {
     "name": "Marsh Macy",
     "url": "https://github.com/mmacy"

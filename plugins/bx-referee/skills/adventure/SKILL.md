@@ -14,7 +14,7 @@ Manages the full adventure lifecycle: setting up new adventures from B/X module 
 
 ## Core principles
 
-The [referee's constitution](../referee/references/constitution.md) governs all behavior. Additionally:
+The [referee's constitution](../referee/references/constitution.md) governs all behavior. Read it before beginning play if it is not already in context. Additionally:
 
 1. **PARTY.md is the canonical party data** — all character state lives here
 2. **SESSION.md is the canonical session state** — timeline, exploration log, current situation
@@ -30,7 +30,7 @@ The [referee's constitution](../referee/references/constitution.md) governs all 
 
 ## Game directory
 
-The **game directory** (`<game-root>`) is passed as part of the arguments (e.g. `new /Users/player/osr-games`). If not provided, **AskUserQuestion** to ask where adventures and characters should be saved. Suggest `~/osr-games` or the current working directory as a default.
+The **game directory** (`<game-root>`) is passed as part of the arguments (e.g. `new /Users/player/osr-games`). If not provided, you **must** use **AskUserQuestion** to ask the player where their game files are stored before doing anything else. Do not search the filesystem for game files — always ask. Suggest `~/osr-games` as a default.
 
 All `adventures/` and `characters/` paths are relative to this game root. Never write game files to the plugin cache directory.
 
@@ -78,6 +78,15 @@ Format:
 The module file path **must** be recorded at the top of LOCATIONS.md so that any skill can locate the source material during play.
 
 This file helps with navigation during play. Include section groupings where the module uses them (e.g., `KEY TO TIER 1`, `PART 2: WEST WING`).
+
+**Page number verification (PDF modules only):** PDF page numbers often differ from the printed page numbers in the book — cover pages, OGL pages, or front matter can shift everything by one or more pages. After building LOCATIONS.md, verify the page numbers are correct:
+
+1. Pick 2-3 keyed locations spread across the module (e.g. first, middle, last)
+2. Read each using the page number recorded in LOCATIONS.md
+3. Confirm the expected room/location content actually appears on that page
+4. If there is an offset (e.g. printed page 5 is actually PDF page 6), apply the correction to **every** page reference in LOCATIONS.md before proceeding
+
+All page numbers in LOCATIONS.md must be **PDF page numbers** (the number you pass to the Read tool's `pages` parameter), not printed book page numbers.
 
 ### Step 5: Initialize PARTY.md
 
@@ -137,7 +146,9 @@ Triggered by `/adventure continue` or routed from referee.
 
 ### Step 1: List adventures
 
-Glob `<game-root>/adventures/*/SESSION.md` to find adventures with saved state. The game root is passed as part of the arguments (e.g. `continue /Users/player/osr-games`). If not provided, **AskUserQuestion** for the game directory.
+The game root is passed as part of the arguments (e.g. `continue /Users/player/osr-games`). If not provided, you **must** use **AskUserQuestion** to ask the player for their game directory before proceeding. Do not search the filesystem.
+
+Once you have the game root, Glob `<game-root>/adventures/*/SESSION.md` to find adventures with saved state.
 
 **AskUserQuestion**: which adventure to continue?
 

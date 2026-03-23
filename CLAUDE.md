@@ -31,7 +31,7 @@ No `pyproject.toml` exists — these are standalone scripts, not a Python packag
 - `.github/plugin/marketplace.json` — central registry listing all plugins with versions and source paths
 - `.claude-plugin/marketplace.json` — symlink to the above (plugin discovery entrypoint)
 - Each plugin has a `.claude-plugin/plugin.json` with metadata and a `skills/` directory
-- When changes are made to a plugin, bump its version in **both** `.claude-plugin/plugin.json` and `.github/plugin/marketplace.json`
+- When changes are made to a plugin, bump its version in `.github/plugin/marketplace.json` only. Do **not** set the version in `.claude-plugin/plugin.json` — for relative-path plugins, the marketplace entry is the version authority. Setting it in both causes update detection to fail.
 
 ### B/X Referee skill graph
 
