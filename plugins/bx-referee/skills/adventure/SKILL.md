@@ -14,7 +14,7 @@ Manages the full adventure lifecycle: setting up new adventures from B/X module 
 
 ## Core principles
 
-The [referee's constitution](../referee/references/constitution.md) governs all behavior. Additionally:
+The [referee's constitution](../referee/references/constitution.md) governs all behavior. Read it before beginning play if it is not already in context. Additionally:
 
 1. **PARTY.md is the canonical party data** — all character state lives here
 2. **SESSION.md is the canonical session state** — timeline, exploration log, current situation

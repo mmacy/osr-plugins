@@ -10,7 +10,7 @@ Resolve combat step-by-step using SRD rules. Accepts the ENCOUNTER HANDOFF: COMB
 
 ## Core principles
 
-The [referee's constitution](../referee/references/constitution.md) governs all behavior. Additionally:
+The [referee's constitution](../referee/references/constitution.md) governs all behavior. Read it before beginning play if it is not already in context. Additionally:
 
 1. **Look up rules from SRD** — read the SRD map or monsters submap to find the right file, then Read it
 2. **Roll dice with roll.py** — use `uv run plugins/bx-referee/skills/referee/scripts/roll.py "<expr>"`
