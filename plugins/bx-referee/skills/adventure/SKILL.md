@@ -30,7 +30,7 @@ The [referee's constitution](../referee/references/constitution.md) governs all 
 
 ## Game directory
 
-The **game directory** (`<game-root>`) is passed as part of the arguments (e.g. `new /Users/player/osr-games`). If not provided, **AskUserQuestion** to ask where adventures and characters should be saved. Suggest `~/osr-games` or the current working directory as a default.
+The **game directory** (`<game-root>`) is passed as part of the arguments (e.g. `new /Users/player/osr-games`). If not provided, you **must** use **AskUserQuestion** to ask the player where their game files are stored before doing anything else. Do not search the filesystem for game files — always ask. Suggest `~/osr-games` as a default.
 
 All `adventures/` and `characters/` paths are relative to this game root. Never write game files to the plugin cache directory.
 
@@ -137,7 +137,9 @@ Triggered by `/adventure continue` or routed from referee.
 
 ### Step 1: List adventures
 
-Glob `<game-root>/adventures/*/SESSION.md` to find adventures with saved state. The game root is passed as part of the arguments (e.g. `continue /Users/player/osr-games`). If not provided, **AskUserQuestion** for the game directory.
+The game root is passed as part of the arguments (e.g. `continue /Users/player/osr-games`). If not provided, you **must** use **AskUserQuestion** to ask the player for their game directory before proceeding. Do not search the filesystem.
+
+Once you have the game root, Glob `<game-root>/adventures/*/SESSION.md` to find adventures with saved state.
 
 **AskUserQuestion**: which adventure to continue?
 
