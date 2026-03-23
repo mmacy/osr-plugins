@@ -2,7 +2,7 @@
   "name": "osr-plugins",
   "metadata": {
     "description": "OSR Apps — AI-powered tabletop RPG plugins for old-school gaming",
-    "version": "1.0.0"
+    "version": "1.0.1"
   },
   "owner": {
     "name": "OSR Apps"
