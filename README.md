@@ -1,4 +1,4 @@
-# OSR Apps plugins
+# OSR plugins
 
 A plugin marketplace for AI-powered Old-School Renaissance tabletop RPG tools. Works with [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [GitHub Copilot CLI](https://docs.github.com/copilot/how-tos/copilot-cli), and other compatible coding agents.
 
