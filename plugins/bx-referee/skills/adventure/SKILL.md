@@ -79,6 +79,15 @@ The module file path **must** be recorded at the top of LOCATIONS.md so that any
 
 This file helps with navigation during play. Include section groupings where the module uses them (e.g., `KEY TO TIER 1`, `PART 2: WEST WING`).
 
+**Page number verification (PDF modules only):** PDF page numbers often differ from the printed page numbers in the book — cover pages, OGL pages, or front matter can shift everything by one or more pages. After building LOCATIONS.md, verify the page numbers are correct:
+
+1. Pick 2-3 keyed locations spread across the module (e.g. first, middle, last)
+2. Read each using the page number recorded in LOCATIONS.md
+3. Confirm the expected room/location content actually appears on that page
+4. If there is an offset (e.g. printed page 5 is actually PDF page 6), apply the correction to **every** page reference in LOCATIONS.md before proceeding
+
+All page numbers in LOCATIONS.md must be **PDF page numbers** (the number you pass to the Read tool's `pages` parameter), not printed book page numbers.
+
 ### Step 5: Initialize PARTY.md
 
 Write an empty party file:
