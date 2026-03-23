@@ -63,6 +63,27 @@ Each turn follows this loop:
 
 Wait for the player to state what they do. Do not offer a menu of actions. Common actions include movement, searching, listening, opening doors, interacting with features, and resting — but the player may attempt anything.
 
+### Turn economy
+
+A 10-minute turn covers a sequence of cautious exploration, not a single action. Multiple quick actions in the same area fit within one turn. Only advance the turn counter when the party does something that genuinely takes ~10 minutes.
+
+**Consumes a full turn:**
+
+- Movement through unexplored areas (up to base MV in feet, e.g. 120')
+- Searching a 10'x10' area
+- An encounter (including aftermath)
+- Resting
+- Extended activities specified by the module (e.g. "takes 2 turns to recover the oil")
+
+**Free/quick actions within the current turn:**
+
+- Opening or forcing a single door
+- Climbing a short ladder or flight of stairs (within the same movement turn)
+- Brief conversation or reporting to the party
+- Examining something in plain sight
+- Drawing a weapon, lighting a torch, drinking a potion
+- Pulling a lever, pressing a button, picking up an item
+
 ### 3. Resolve action
 
 **Movement:**
