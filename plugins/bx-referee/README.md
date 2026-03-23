@@ -15,7 +15,7 @@ A solo play tool for Old-School Essentials (OSE). Point it at a B/X adventure mo
 
 ## Prerequisites
 
-- A coding agent harness that supports plugins, such as [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [GitHub Copilot CLI](https://docs.github.com/en/copilot), or another compatible agent.
+- [Claude Code](https://code.claude.com/docs/en/plugins) version 1.0.33 or later.
 - An OSE or B/X adventure module in PDF or Markdown format. Adventures are available from [Exalted Funeral](https://www.exaltedfuneral.com/collections/old-school-essentials), [DriveThruRPG (OSE)](https://www.drivethrurpg.com/en/publisher/5606/necrotic-gnome/category/32434/old-school-essentials), and [DriveThruRPG (classic B/X)](https://www.drivethrurpg.com/en/publisher/44/wizards-of-the-coast/category/9736/d-d-basic?src=cat9736).
 
 ## Install
