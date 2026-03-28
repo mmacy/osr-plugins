@@ -57,6 +57,8 @@ The [referee’s constitution](../referee/references/constitution.md) governs al
 ### 6. Note saving throws and class abilities
 
 - Use saving throws, special abilities, and restrictions from class data already extracted in step 2
+- **Arcane spellbook (Magic-User, Elf only):** Per `srd/Spell_Books.md`, arcane casters begin with as many spells in their spellbook as they can memorize (1 at level 1). Read the spell list from `srd/Magic-User_Spells.md` and present the 1st-level spells. **AskUserQuestion**: let the player choose. Record the selected spell(s) on a `SPELLS` line (e.g. `SPELLS: 1st: Sleep`). Read Magic is a common choice — mention it but do not force it.
+- **Clerics** have no spells at level 1. Skip this.
 
 ### 7. Determine hit points
 
@@ -86,12 +88,26 @@ The [referee’s constitution](../referee/references/constitution.md) governs al
 
 - Calculate from armor + DEX modifier
 
-### 12. Note level and XP
+### 12. Calculate encumbrance
+
+Using the **detailed encumbrance** system from `srd/Time%2C_Weight%2C_Movement.md` (Option 2):
+
+- Sum equipment weight: armour and weapon weights from `srd/Weapons_and_Armour.md`, plus 80 cn for miscellaneous adventuring gear (backpack, rations, rope, spikes, sacks, etc.)
+- Add coin weight: 1 cn per coin of any type
+- Record total as `ENC [total]/1,600 cn`
+- Determine movement rate from the detailed encumbrance table:
+  - Up to 400 cn: MV 120'(40')
+  - Up to 600 cn: MV 90'(30')
+  - Up to 800 cn: MV 60'(20')
+  - Up to 1,600 cn: MV 30'(10')
+- Format: `ENC [total]/1,600 cn | MV [rate]`
+
+### 13. Note level and XP
 
 - Level 1, XP 0
 - Use XP needed for level 2 from class data already extracted in step 2
 
-### 13. Identify character
+### 14. Identify character
 
 - **AskUserQuestion**: Character name
 - **AskUserQuestion**: Pronouns
@@ -108,8 +124,63 @@ Present completed character concisely. Add sections like THIEF SKILLS, CLERIC TU
   - SPECIAL ABILITIES: [list]
   - EQUIPMENT: [list]
   - MONEY: [coin type] [n], ...
+  - ENC [current]/1,600 cn | MV [rate]
   - LANGUAGES: [list]
 ```
+
+## Level-up procedure
+
+Invoked by `Skill "character" "level-up <adventure-path>"` from the combat skill after XP is awarded. This is not part of character creation.
+
+### 1. Identify eligible PCs
+
+Read the adventure's `PARTY.md`. For each surviving PC, compare their current XP to the next-level threshold (the value after `/` in `XP current/next`). Process each PC whose XP ≥ threshold.
+
+### 2. Enforce one-level-per-session cap
+
+Per `srd/Advancement.md`: a character cannot advance more than one level per session. If the PC's XP would reach the threshold for the level *after* the new one, cap it at 1 XP below that threshold. Update the XP value in PARTY.md accordingly.
+
+### 3. Read class progression data
+
+Read the PC's class SRD page (e.g. `srd/Fighter.md`, `srd/Cleric.md`) to find the new level's row in the Level Progression table. Extract:
+
+- **HD**: new Hit Dice expression
+- **THAC0**: new THAC0 value
+- **Saving throws**: Death, Wands, Paralysis, Breath, Spells values
+- **Spell slots** (if applicable): slots per spell level
+- **Thief skills** (if Thief): updated skill percentages from the Thief Skills table
+- **Turning table** (if Cleric): note any improved turning results
+
+### 4. Roll new Hit Die
+
+Roll one additional Hit Die of the class type using `roll.py`:
+
+```bash
+uv run plugins/bx-referee/skills/referee/scripts/roll.py "1d8"
+```
+
+- Add the PC's CON modifier to the roll. Minimum 1 HP gained per die regardless of CON penalty.
+- **CON cap**: at level 10+ (when the class table shows a fixed HP bonus like `+2` instead of a die), CON modifiers no longer apply. The HP gain is the fixed amount shown.
+- Add the result to the PC's HP max. Set current HP to the new max (level-up restores full HP).
+- Report the roll, modifier, and new HP total.
+
+### 5. Update PARTY.md
+
+Use Edit to update the leveled-up PC's stat block:
+
+- **Level**: increment (e.g. `Level 1` → `Level 2`)
+- **HP**: new `current/max` (both set to new max)
+- **THAC0**: new value from the class table
+- **XP**: keep current total, update the next-level threshold to match the new next level
+- **SAVES**: new saving throw values
+- **Spell slots** (Cleric, Magic-User, Elf): add a `SPELLS` line if gaining first slots, or update existing counts. Format: `SPELLS: 1st:[n] 2nd:[n] ...`
+  - **Arcane casters (Magic-User, Elf):** Per `srd/Spell_Books.md`, when a caster gains access to a new spell level, they may add new spells to their spellbook via mentoring. Read the appropriate spell list from `srd/Magic-User_Spells.md` and **AskUserQuestion** to let the player choose which spell(s) to add. Update the `SPELLS` line with the new selections.
+  - **Clerics:** Clerics pray for spells daily from the full Cleric spell list — no spellbook. When they first gain slots (level 2), or gain access to a new spell level, **AskUserQuestion** to let the player choose which spells to prepare. Update the `SPELLS` line.
+- **Thief skills** (Thief only): update or add a `THIEF SKILLS` line with new percentages
+
+### 6. Announce
+
+Report to the player: "[Name] has reached level [N]!" followed by a brief summary of what changed (new HP, improved saves, new spell slots, etc.).
 
 ## After completion
 
@@ -125,5 +196,6 @@ Example character block:
   - SAVES: Death 12 | Wands 13 | Paralysis 14 | Breath 15 | Spells 16
   - EQUIPMENT: Plate mail, shield, sword (1d8), dagger (1d4), torches x12, tinder box, backpack
   - MONEY: 10 gp, 2 sp
+  - ENC 670/1,600 cn | MV 90'(30')
   - LANGUAGES: Common (broken), Neutral
 ```
