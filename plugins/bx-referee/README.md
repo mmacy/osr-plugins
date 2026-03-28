@@ -30,10 +30,10 @@ A solo play tool for Old-School Essentials (OSE). Point it at a B/X adventure mo
 |---|---|---|
 | [Referee](skills/referee/README.md) | `/bx-referee:referee` | Orchestrator that routes to the right skill based on game context |
 | [Adventure](skills/adventure/README.md) | `/bx-referee:adventure` | Set up from module files, resume sessions, save state |
-| [Character](skills/character/README.md) | `/bx-referee:character` | Interactive character creation with SRD rules lookup |
-| [Exploration](skills/exploration/README.md) | `/bx-referee:exploration` | Dungeon/wilderness turn loop with movement, wandering monsters, searching, doors, traps |
-| [Encounter](skills/encounter/README.md) | `/bx-referee:encounter` | Surprise, distance, reaction, flee/evasion, parley |
-| [Combat](skills/combat/README.md) | `/bx-referee:combat` | Initiative, attacks, damage, saving throws, morale, spells, death |
+| [Character](skills/character/README.md) | `/bx-referee:character` | Interactive character creation and level-up with SRD rules lookup |
+| [Exploration](skills/exploration/README.md) | `/bx-referee:exploration` | Dungeon/wilderness turn loop with movement, wandering monsters, searching, doors, traps, spells, encumbrance |
+| [Encounter](skills/encounter/README.md) | `/bx-referee:encounter` | Surprise, distance, reaction, flee/evasion, parley, spells |
+| [Combat](skills/combat/README.md) | `/bx-referee:combat` | Initiative, attacks, damage, saving throws, morale, spells, death, XP and leveling |
 
 ## How it works
 
@@ -51,6 +51,10 @@ The plugin includes a **pre-cached copy of the [OSE SRD](https://oldschoolessent
 4. **Encounters.** Surprise, distance, reaction rolls, flee/evasion, parley, with handoff to combat when fighting starts.
 5. **Combat.** Initiative, attacks, damage, saving throws, morale, spells, and death.
 6. **Save/resume.** Session state is persisted to Markdown files and can be resumed later.
+
+### Scope
+
+The plugin covers dungeon and wilderness exploration for the B/X level range (levels 1–14), including combat, encounter resolution, character advancement, encumbrance tracking, and spell casting both in and out of combat. High-level play and domain management (strongholds, followers, mass combat, ship combat) are intentionally out of scope.
 
 ### Adventure state
 

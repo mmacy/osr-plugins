@@ -243,6 +243,7 @@ See [PARTY.md](PARTY.md) for current roster and stats.
   - SAVES: Death 12 | Wands 13 | Paralysis 14 | Breath 15 | Spells 16
   - EQUIPMENT: Plate mail, shield, sword (1d8), dagger (1d4), torches x12, tinder box, backpack
   - MONEY: 10 gp, 2 sp
+  - ENC 670/1,600 cn | MV 90'(30')
   - LANGUAGES: Common (broken), Neutral
 ```
 

@@ -182,6 +182,10 @@ After combat ends in victory:
    - Expended spell slots or consumable items
    - XP gained (adjusted per-PC totals from step 3)
    - Dead PCs: append `| STATUS: DEAD` to their first line
+5. **Level-up check**: After updating XP, check each surviving PC: if their new XP total ≥ the next-level threshold (the value after `/` in `XP current/next`), hand off to the character skill for advancement:
+   - `Skill "character" "level-up <adventure-path>"` — pass the adventure directory path
+   - Only one level gain per session is permitted. If XP would push a PC two or more levels, cap their XP at 1 below the threshold for the level after next (see `srd/Advancement.md`, "Maximum XP in One Session")
+   - After the character skill returns, re-read `PARTY.md` for updated stats before continuing
 
 ## SRD page slugs reference
 

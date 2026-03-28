@@ -1,7 +1,7 @@
 ---
 name: encounter
 description: Resolve OSE encounters — surprise, distance, reaction, monster stats, flee/evasion, parley. Use when the party encounters monsters or another entity.
-allowed-tools: WebFetch Bash AskUserQuestion Read Glob
+allowed-tools: WebFetch Bash AskUserQuestion Read Edit Glob
 ---
 
 # Encounter resolution for Old-School Essentials
@@ -78,7 +78,7 @@ If the party chooses to flee:
 - If evasion succeeds: encounter over
 - If evasion fails: combat handoff (step 7)
 
-### Step 6: Parley
+### Step 6: Parley or spells
 
 If the party chooses to parley:
 
@@ -89,6 +89,15 @@ If the party chooses to parley:
 - If parley breaks down: narrate the breakdown and wait for the player to respond
 - If fight: combat handoff (step 7)
 - If flee: go to step 5
+
+If a PC casts a spell during the encounter (before combat):
+
+1. Deduct the spell slot in PARTY.md using Edit
+2. Read the spell's SRD page via the spells submap for range, duration, and saving throw
+3. Roll saves via `roll.py` if applicable — do not reveal target numbers (Article II)
+4. Apply the effect and narrate the result
+5. If the spell has a duration in turns, note it in SESSION.md
+6. If the spell is hostile (e.g. Charm Person, Sleep), this typically triggers combat — proceed to step 7
 
 ### Step 7: Combat handoff
 

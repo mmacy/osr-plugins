@@ -107,6 +107,18 @@ A 10-minute turn covers a sequence of cautious exploration, not a single action.
 
 - Use door rules from `srd/Dungeon_Adventuring.md` (stuck, locked, closing behaviour)
 
+**Cast a spell (non-combat):**
+
+When a PC casts a spell outside of combat:
+
+1. **Deduct spell slot**: Mark the spell slot as used in PARTY.md using Edit. If the PC has no remaining slots of the required level, the spell cannot be cast.
+2. **Read spell details**: Use the spells submap (`plugins/bx-referee/skills/referee/references/srd_spells.md`) to find the spell file, then Read it. Note range, duration, area of effect, and saving throw.
+3. **Saving throws** (if applicable): Roll 1d20 via `roll.py` against the target's save value. Do not reveal the target number (Article II). Narrate success or failure.
+4. **Apply effect**: Resolve the spell's effect as described in the SRD page. Narrate the result.
+5. **Track duration**: If the spell has a duration measured in turns, record it in SESSION.md. Decrement each turn in step 4 (Update tracking) and announce when it expires.
+
+Casting a spell takes a full turn (the caster is concentrating on the ritual).
+
 ### 4. Update tracking
 
 - Increment turn counter
@@ -114,6 +126,12 @@ A 10-minute turn covers a sequence of cautious exploration, not a single action.
 - When light runs out: warn the player; see darkness rules in `srd/Hazards_and_Challenges.md`
 - Track spell durations in turns where applicable
 - Resting: per `srd/Dungeon_Adventuring.md` (Resting section)
+- **Encumbrance**: when the party picks up treasure, drops items, or uses consumables (torches, oil, rations, potions), recalculate the affected PC's encumbrance and movement rate:
+  - Coin weight: 1 cn per coin of any type
+  - Treasure weight: per the treasure encumbrance table in `srd/Time%2C_Weight%2C_Movement.md` (gems 1 cn, jewellery 10 cn, potions 10 cn, etc.)
+  - Update `ENC` and `MV` on the PC's stat block in PARTY.md using Edit
+  - If encumbrance bracket changes, announce the new movement rate
+  - Party movement rate is the slowest member's rate
 
 ### 5. Display state delta
 
