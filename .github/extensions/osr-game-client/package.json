@@ -1,4 +1,5 @@
 {
+  "name": "osr-game-client",
   "private": true,
   "type": "module",
   "dependencies": {

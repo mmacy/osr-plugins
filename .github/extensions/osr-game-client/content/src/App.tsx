@@ -35,6 +35,14 @@ const TABS: { id: TabId; label: string }[] = [
 
 const SUGGESTED_GAME_ROOT = "~/osr-games";
 const ADVENTURES_POLL_MS = 5000;
+const CHAT_WIDTH_KEY = "osr-game-client.chatWidth";
+let localStorageWarned = false;
+
+function warnLocalStorageFailure(action: string, e: unknown): void {
+    if (localStorageWarned) return;
+    localStorageWarned = true;
+    console.warn(`[osr-game-client] localStorage ${action} failed`, e);
+}
 
 export function App() {
     const [setup, setSetup] = useState<Setup | null>(null);
@@ -53,8 +61,13 @@ export function App() {
     // Chat-panel width (resizable). Persisted in localStorage; clamped each
     // render so a bad value (or a smaller window) can't trap it offscreen.
     const [chatWidth, setChatWidth] = useState<number>(() => {
-        const stored = parseInt(localStorage.getItem("bxref.chatWidth") ?? "", 10);
-        return Number.isFinite(stored) ? stored : 420;
+        try {
+            const stored = parseInt(localStorage.getItem(CHAT_WIDTH_KEY) ?? "", 10);
+            return Number.isFinite(stored) ? stored : 420;
+        } catch (e) {
+            warnLocalStorageFailure("read", e);
+            return 420;
+        }
     });
     const dragStateRef = useRef<{ startX: number; startWidth: number } | null>(null);
 
@@ -73,7 +86,7 @@ export function App() {
     };
     const onSplitterPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
         if (!dragStateRef.current) return;
-        try { localStorage.setItem("bxref.chatWidth", String(chatWidth)); } catch { /* ignore */ }
+        try { localStorage.setItem(CHAT_WIDTH_KEY, String(chatWidth)); } catch (err) { warnLocalStorageFailure("write", err); }
         dragStateRef.current = null;
         document.body.style.cursor = "";
         try { (e.target as HTMLElement).releasePointerCapture?.(e.pointerId); } catch { /* ignore */ }

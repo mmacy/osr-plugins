@@ -22,7 +22,7 @@ import { readFile, rm } from "node:fs/promises";
 import { existsSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { extname, join, normalize, sep, isAbsolute, resolve } from "node:path";
-import { randomBytes, randomUUID } from "node:crypto";
+import { randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
 import { joinSession } from "@github/copilot-sdk/extension";
 
 const __dirname = import.meta.dirname;
@@ -30,10 +30,15 @@ const __dirname = import.meta.dirname;
 const MIME = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg", ".woff2": "font/woff2" };
 
 const BRIDGE_JS = `(() => {
+    const params = new URLSearchParams(location.hash.startsWith("#") ? location.hash.slice(1) : location.hash);
+    const nonce = params.get("bridgeNonce") || "";
     const ws = new WebSocket("ws://" + location.host);
     const pending = new Map();
     let nextId = 0;
-    const ready = new Promise((r) => ws.addEventListener("open", r, { once: true }));
+    const ready = new Promise((r) => ws.addEventListener("open", () => {
+        ws.send(JSON.stringify({ type: "auth", nonce }));
+        r();
+    }, { once: true }));
     ws.onmessage = async (ev) => {
         const msg = JSON.parse(ev.data);
         if ("code" in msg) {
@@ -59,6 +64,21 @@ const BRIDGE_JS = `(() => {
         },
     });
 })();`;
+
+function timingSafeStringEqual(value, expected) {
+    if (typeof value !== "string") return false;
+    const actual = Buffer.from(value, "utf8");
+    const padded = Buffer.alloc(expected.length);
+    actual.copy(padded, 0, 0, Math.min(actual.length, expected.length));
+    return timingSafeEqual(padded, expected) && actual.length === expected.length;
+}
+
+function isValidBridgeAuth(msg, expectedNonce) {
+    return msg
+        && typeof msg === "object"
+        && msg.type === "auth"
+        && timingSafeStringEqual(msg.nonce, expectedNonce);
+}
 
 function staticHandler(rootDir) {
     return async (req, res) => {
@@ -97,6 +117,8 @@ async function showWebview({ dir, title = "Copilot Webview", width = 900, height
     const { WebSocketServer } = await import("ws");
 
     const id = randomBytes(4).toString("hex");
+    const bridgeNonce = randomBytes(32).toString("hex");
+    const bridgeNonceBuffer = Buffer.from(bridgeNonce, "utf8");
     const pending = new Map();
     let socket = null;
     const closeListeners = [];
@@ -105,10 +127,24 @@ async function showWebview({ dir, title = "Copilot Webview", width = 900, height
     server.on("clientError", (_e, s) => { try { s.destroy(); } catch {} });
     const wss = new WebSocketServer({ server });
     wss.on("connection", (sock) => {
-        socket = sock;
+        let authenticated = false;
         sock.on("message", async (data) => {
             let msg;
-            try { msg = JSON.parse(data); } catch { return; }
+            try {
+                msg = JSON.parse(data);
+            } catch {
+                if (!authenticated) sock.close(1008, "unauthorized");
+                return;
+            }
+            if (!authenticated) {
+                if (!isValidBridgeAuth(msg, bridgeNonceBuffer)) {
+                    sock.close(1008, "unauthorized");
+                    return;
+                }
+                authenticated = true;
+                socket = sock;
+                return;
+            }
             if ("method" in msg) {
                 let result, error;
                 try {
@@ -123,24 +159,30 @@ async function showWebview({ dir, title = "Copilot Webview", width = 900, height
                 if (cb) { pending.delete(msg.id); cb(msg); }
             }
         });
-        sock.on("close", () => { if (socket === sock) socket = null; });
+        sock.on("close", () => { if (authenticated && socket === sock) socket = null; });
     });
 
     await new Promise((r) => server.listen(0, "127.0.0.1", r));
-    const url = `http://127.0.0.1:${server.address().port}/`;
+    const url = `http://127.0.0.1:${server.address().port}/#bridgeNonce=${bridgeNonce}`;
 
     // On Windows, WebView2 reads WEBVIEW2_USER_DATA_FOLDER and would otherwise
     // create a default folder we don't control. Use a per-window dir we can clean
     // up on exit. macOS (WKWebView) and Linux (webkit2gtk) store data in platform
     // defaults shared by the host process — nothing to redirect or orphan per-window.
     const userDataDir = process.platform === "win32" ? join(tmpdir(), `copilot-webview-${id}`) : null;
-    const childEnv = { ...process.env, CW_URL: url, CW_TITLE: title, CW_WIDTH: String(width), CW_HEIGHT: String(height) };
+    const childEnv = Object.fromEntries(
+        Object.entries(process.env).filter(([key]) => key !== ["CW", "URL"].join("_")),
+    );
+    childEnv.CW_TITLE = title;
+    childEnv.CW_WIDTH = String(width);
+    childEnv.CW_HEIGHT = String(height);
     if (userDataDir) childEnv.WEBVIEW2_USER_DATA_FOLDER = userDataDir;
 
     const child = spawn("node", [join(__dirname, "webview-child.mjs")], {
-        stdio: ["ignore", "ignore", "inherit"],
+        stdio: ["pipe", "ignore", "inherit"],
         env: childEnv,
     });
+    child.stdin.end(url, "utf8");
 
     const handle = {
         eval(code, { timeoutMs = 3000 } = {}) {

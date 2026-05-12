@@ -22,7 +22,12 @@ export function CharacterCard({ character, defaultExpanded = false }: Props) {
 
     return (
         <div className={`pc ${isDead ? "dead" : ""} ${expanded ? "expanded" : ""}`}>
-            <div className="pc-row" onClick={() => setExpanded((x) => !x)}>
+            <button
+                type="button"
+                className="pc-row"
+                onClick={() => setExpanded((x) => !x)}
+                aria-expanded={expanded}
+            >
                 <span className="pc-name">{character.name}</span>
                 <span className="pc-clazz">
                     {character.classRaw ?? "—"}
@@ -45,7 +50,7 @@ export function CharacterCard({ character, defaultExpanded = false }: Props) {
                     )}
                 </span>
                 <span className="pc-chev">{expanded ? "▾" : "▸"}</span>
-            </div>
+            </button>
 
             {expanded && (
                 <div className="pc-detail">
@@ -180,15 +185,6 @@ function fmtNum(n: number | null | undefined): string {
     return n.toLocaleString();
 }
 
-function shortSave(k: string): string {
-    return {
-        death: "Death",
-        wands: "Wands",
-        paralysis: "Paral.",
-        breath: "Breath",
-        spells: "Spells",
-    }[k] ?? k;
-}
 
 function abilityFullName(k: string): string {
     return {

@@ -55,14 +55,16 @@ export function SrdLookup() {
                     </div>
                 ) : (
                     results.map((r) => (
-                        <div
+                        <button
+                            type="button"
                             key={r.file + r.title}
                             className={`item ${selected?.file === r.file ? "selected" : ""}`}
                             onClick={() => open(r)}
+                            aria-pressed={selected?.file === r.file}
                         >
                             <span>{r.title}</span>
                             <span className="cat">{shortCat(r.category)}</span>
-                        </div>
+                        </button>
                     ))
                 )}
             </div>

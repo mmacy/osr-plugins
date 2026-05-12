@@ -12,13 +12,13 @@ let elicitationListeners: ElicitationListener[] = [];
 
 export function publishEvent(event: ChatEvent): void {
     for (const l of eventListeners) {
-        try { l(event); } catch { /* ignore listener errors */ }
+        try { l(event); } catch (e) { console.error("chatBus listener failed", e); }
     }
 }
 
 export function publishElicitation(req: ElicitationRequest): void {
     for (const l of elicitationListeners) {
-        try { l(req); } catch { /* ignore listener errors */ }
+        try { l(req); } catch (e) { console.error("chatBus elicitation listener failed", e); }
     }
 }
 

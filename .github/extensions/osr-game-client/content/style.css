@@ -721,9 +721,17 @@ button.copy-code {
   grid-template-columns: 12ch 11ch minmax(140px, 1fr) 5ch 5ch auto auto;
   gap: 0.6rem;
   align-items: center;
+  width: 100%;
   padding: 0.5rem 0.75rem;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  font: inherit;
+  text-align: left;
   cursor: pointer;
   user-select: none;
+  appearance: none;
 }
 .pc-row:hover { background: var(--panel-2); }
 .pc-name {
@@ -886,37 +894,6 @@ button.copy-code {
   border-top: 1px solid var(--accent);
 }
 
-/* ---------- shared abilities / saves grids / XP bar (used inside pc-detail) ---------- */
-.abilities {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 0.25rem;
-  background: var(--panel);
-  padding: 0.4rem;
-  border-radius: 4px;
-  border: 1px solid var(--border);
-}
-.ability {
-  display: flex; flex-direction: column; align-items: center;
-  font-size: 0.7rem;
-}
-.ability .key { color: var(--muted); }
-.ability .score { font-size: 1rem; font-weight: 700; }
-.ability .mod { color: var(--accent); font-size: 0.75rem; }
-
-.saves-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 0.25rem;
-  font-size: 0.7rem;
-}
-.saves-grid .save {
-  display: flex; flex-direction: column; align-items: center;
-  background: var(--panel); padding: 0.3rem 0.1rem;
-  border: 1px solid var(--border); border-radius: 3px;
-}
-.saves-grid .save .label { color: var(--muted); font-size: 0.65rem; }
-.saves-grid .save .val { font-weight: 700; color: var(--text); }
 
 .xp-bar {
   width: 100%;
@@ -1312,6 +1289,15 @@ button.copy-code {
   justify-content: space-between;
   align-items: center;
   gap: 0.4rem;
+}
+.srd .index button.item {
+  width: 100%;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  font: inherit;
+  text-align: left;
+  appearance: none;
 }
 .srd .index .item:hover { background: var(--panel-2); }
 .srd .index .item.selected { background: var(--panel-2); color: var(--accent); }

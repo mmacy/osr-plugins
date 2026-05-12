@@ -2,8 +2,8 @@ DESIGNATION OF PRODUCT IDENTITY
 
 The following are designated as Product Identity in accordance with
 Section 1(e) of the Open Game License: all skill prompt text in SKILL.md
-files; the project name "B/X Referee" and "bx-referee"; all Python source code (roll.py,
-fetch_srd.py, add_titles.py); the SRD docs map files (srd_map.md,
+files; the project name "B/X Referee" and "bx-referee"; Python source code (roll.py);
+the SRD docs map files (srd_map.md,
 srd_monsters.md, srd_spells.md) including all descriptive text therein.
 
 DESIGNATION OF OPEN GAME CONTENT

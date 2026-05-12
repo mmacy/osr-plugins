@@ -28,8 +28,15 @@ interface Props {
 const VISIBLE_FEED_CAP = 1500;
 const BUFFER_FEED_CAP = 3000;
 const STICKY_THRESHOLD = 64;
-const VERBOSE_KEY = "bxref.chat.verbose";
-const DRAFT_KEY_PREFIX = "bxref.chat.draft.";
+const VERBOSE_KEY = "osr-game-client.chat.verbose";
+const DRAFT_KEY_PREFIX = "osr-game-client.chat.draft.";
+let localStorageWarned = false;
+
+function warnLocalStorageFailure(action: string, e: unknown): void {
+    if (localStorageWarned) return;
+    localStorageWarned = true;
+    console.warn(`[osr-game-client] localStorage ${action} failed`, e);
+}
 
 // One feed item — either rendered chat content or a tool-call hint or an
 // elicitation form. The feed is built up by reducing ChatEvents from the
@@ -210,7 +217,7 @@ function capBuffer(items: FeedItem[]): FeedItem[] {
                 it.kind === "elicitation"
                 && it.elicitation
                 && it.status !== "error"
-                && !(it as { status?: string }).status
+                && !it.status
             ) {
                 out.push(it);
                 continue;
@@ -229,7 +236,7 @@ export function ChatPanel({ connected, width, adventureKey, transcriptSeed }: Pr
     const [draft, setDraft] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [verbose, setVerbose] = useState<boolean>(() => {
-        try { return localStorage.getItem(VERBOSE_KEY) === "1"; } catch { return false; }
+        try { return localStorage.getItem(VERBOSE_KEY) === "1"; } catch (e) { warnLocalStorageFailure("read", e); return false; }
     });
     const [thinkingDepth, setThinkingDepth] = useState(0);
     const [stickyBottom, setStickyBottom] = useState(true);
@@ -240,7 +247,7 @@ export function ChatPanel({ connected, width, adventureKey, transcriptSeed }: Pr
     stickyRef.current = stickyBottom;
 
     useEffect(() => {
-        try { localStorage.setItem(VERBOSE_KEY, verbose ? "1" : "0"); } catch { /* ignore */ }
+        try { localStorage.setItem(VERBOSE_KEY, verbose ? "1" : "0"); } catch (e) { warnLocalStorageFailure("write", e); }
     }, [verbose]);
 
     // ---- draft persistence per adventure
@@ -252,7 +259,8 @@ export function ChatPanel({ connected, width, adventureKey, transcriptSeed }: Pr
         try {
             const stored = localStorage.getItem(draftKey);
             setDraft(stored ?? "");
-        } catch {
+        } catch (e) {
+            warnLocalStorageFailure("read", e);
             setDraft("");
         }
     }, [draftKey]);
@@ -262,7 +270,7 @@ export function ChatPanel({ connected, width, adventureKey, transcriptSeed }: Pr
             try {
                 if (draft) localStorage.setItem(draftKey, draft);
                 else localStorage.removeItem(draftKey);
-            } catch { /* ignore */ }
+            } catch (e) { warnLocalStorageFailure("write", e); }
         }, 250);
         return () => clearTimeout(handle);
     }, [draft, draftKey]);

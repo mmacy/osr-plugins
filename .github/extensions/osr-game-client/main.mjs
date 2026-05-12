@@ -23,13 +23,72 @@ import { CopilotWebview } from "./lib/copilot-webview.js";
 
 marked.setOptions({ gfm: true, breaks: false });
 
-// Disable raw HTML and escape any tag-like input. SRD content is local and
-// trusted, but defense-in-depth: the page has access to `window.copilot`,
-// so any HTML injection inside a `dangerouslySetInnerHTML` block could in
-// principle drive callbacks that touch the filesystem.
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
+function safeMarkdownUrl(href) {
+    if (typeof href !== "string") return null;
+    const raw = href.trim();
+    if (!raw) return "";
+    if (raw.startsWith("//")) return null;
+    let parsed;
+    try {
+        parsed = new URL(raw, "https://osr-game-client.local/");
+    } catch {
+        return null;
+    }
+    const hasScheme = /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(raw);
+    const isRelative = parsed.origin === "https://osr-game-client.local" && !hasScheme;
+    if (isRelative) {
+        try {
+            return encodeURI(raw).replace(/%25/g, "%");
+        } catch {
+            return null;
+        }
+    }
+    if (["http:", "https:", "mailto:"].includes(parsed.protocol)) return parsed.href;
+    return null;
+}
+
+function renderMarkdown(content) {
+    try {
+        return marked.parse(content, { async: false });
+    } catch (e) {
+        console.error("[osr-game-client] markdown render failed", e);
+        return "";
+    }
+}
+
+// Disable raw HTML and filter markdown link/image URLs. SRD content is local
+// and trusted, but defense-in-depth: the page has access to `window.copilot`,
+// so any injection inside a `dangerouslySetInnerHTML` block could in principle
+// drive callbacks that touch the filesystem.
 marked.use({
     renderer: {
         html() { return ""; },
+        link({ href, title, tokens }) {
+            const text = this.parser.parseInline(tokens);
+            const safeHref = safeMarkdownUrl(href);
+            if (safeHref == null) return text;
+            let out = `<a href="${escapeHtml(safeHref)}"`;
+            if (title) out += ` title="${escapeHtml(title)}"`;
+            out += `>${text}</a>`;
+            return out;
+        },
+        image({ href, title, text }) {
+            const safeHref = safeMarkdownUrl(href);
+            if (safeHref == null) return escapeHtml(text);
+            let out = `<img src="${escapeHtml(safeHref)}" alt="${escapeHtml(text)}"`;
+            if (title) out += ` title="${escapeHtml(title)}"`;
+            out += ">";
+            return out;
+        },
     },
 });
 
@@ -39,7 +98,6 @@ const LAST_GAME_ROOT_FILE = join(STATE_DIR, ".last-game-root");
 const PLUGIN_ROOT_FILE = join(STATE_DIR, ".plugin-root");
 
 const SIDECAR_DIR = ".osr-game-client";
-const LEGACY_SIDECAR_DIR = ".bx-referee-dashboard";
 const COMBAT_FILE = "combat.json";
 const VISITED_FILE = "visited.json";
 const NOTES_FILE = "notes.md";
@@ -80,12 +138,8 @@ function assertSubpath(child, parent, label) {
 
 function validAdventureName(name) {
     return typeof name === "string"
-        && name.length > 0
         && name.length < 200
-        && !/[\\/]/.test(name)
-        && name !== "."
-        && name !== ".."
-        && !name.startsWith(".");
+        && /^[a-z0-9][a-z0-9-]*$/.test(name);
 }
 
 async function adventureDir(gameRoot, name) {
@@ -104,24 +158,6 @@ async function adventureDir(gameRoot, name) {
 async function sidecarDir(gameRoot, name) {
     const adv = await adventureDir(gameRoot, name);
     const dir = join(adv, SIDECAR_DIR);
-    // One-shot migration: if a legacy `.bx-referee-dashboard/` exists and
-    // the new `.osr-game-client/` does not, rename it so existing combat
-    // tracker / visited-locations / notes data is preserved across the
-    // rebrand. If both exist (e.g. user re-opened an old session after
-    // partial migration), leave both untouched; new writes go to the new
-    // dir.
-    if (!existsSync(dir)) {
-        const legacy = join(adv, LEGACY_SIDECAR_DIR);
-        if (existsSync(legacy) && statSync(legacy).isDirectory()) {
-            try {
-                await rename(legacy, dir);
-            } catch (e) {
-                process.stderr.write(
-                    `[osr-game-client] sidecar migration failed for ${legacy}: ${e.message}\n`,
-                );
-            }
-        }
-    }
     await mkdir(dir, { recursive: true });
     return dir;
 }
@@ -137,14 +173,15 @@ async function withFileLock(filePath, fn) {
     const prev = fileLocks.get(filePath) ?? Promise.resolve();
     let release;
     const next = new Promise((r) => { release = r; });
-    fileLocks.set(filePath, prev.then(() => next));
+    const chained = prev.then(() => next);
+    fileLocks.set(filePath, chained);
     try {
         await prev;
         return await fn();
     } finally {
         release();
         // Garbage-collect the lock if no follower queued behind us.
-        if (fileLocks.get(filePath) === prev.then(() => next)) {
+        if (fileLocks.get(filePath) === chained) {
             fileLocks.delete(filePath);
         }
     }
@@ -199,7 +236,9 @@ async function readJsonOrNullSafe(filePath) {
 async function readTextOrNull(filePath) {
     try {
         return await readFile(filePath, "utf8");
-    } catch {
+    } catch (e) {
+        if (e?.code === "ENOENT") return null;
+        process.stderr.write(`[osr-game-client] failed to read ${filePath}: ${e.message}\n`);
         return null;
     }
 }
@@ -207,7 +246,9 @@ async function readTextOrNull(filePath) {
 async function mtimeOrNull(filePath) {
     try {
         return (await stat(filePath)).mtimeMs;
-    } catch {
+    } catch (e) {
+        if (e?.code === "ENOENT") return null;
+        process.stderr.write(`[osr-game-client] failed to stat ${filePath}: ${e.message}\n`);
         return null;
     }
 }
@@ -614,7 +655,7 @@ const callbacks = {
         const out = [];
         for (const entry of entries) {
             if (!entry.isDirectory()) continue;
-            if (entry.name.startsWith(".")) continue;
+            if (!validAdventureName(entry.name)) continue;
             const partyPath = join(advRoot, entry.name, "PARTY.md");
             const sessionPath = join(advRoot, entry.name, "SESSION.md");
             const partyMtime = await mtimeOrNull(partyPath);
@@ -762,7 +803,7 @@ const callbacks = {
         assertSubpath(abs, index.srdDir, "SRD file");
         const content = await readTextOrNull(abs);
         if (content == null) throw new Error(`could not read SRD file: ${file}`);
-        const html = marked.parse(content, { async: false });
+        const html = renderMarkdown(content);
         return { file, title: known.title, content, html };
     },
 
@@ -771,11 +812,7 @@ const callbacks = {
             throw new Error("session not ready; please retry in a moment");
         }
         const root = ensureAbsolute(gameRoot, "gameRoot");
-        // For new adventures we want a strict slug — lowercase, digits, dashes
-        // — to keep filesystem-safe directory names. (Existing adventures may
-        // have looser names from before this rule, so the general validation
-        // helper stays permissive; this is creation-time only.)
-        if (!validAdventureName(name) || !/^[a-z0-9][a-z0-9-]*$/.test(name)) {
+        if (!validAdventureName(name)) {
             throw new Error(
                 `adventure name must be a slug (lowercase letters, digits, dashes; cannot start with a dot or dash): ${name}`,
             );
@@ -791,17 +828,17 @@ const callbacks = {
             );
         }
         const prompt =
-            `${clientContextNote()}\n\n` +
+            agentPromptHeader() +
             `The player wants to start a new bx-referee adventure. Invoke the ` +
             `**bx-referee:referee** orchestrator skill — its first action loads the ` +
             `constitution and routes into the right sub-skill. The game directory, ` +
             `module file, and adventure name are already chosen via the OSR Game ` +
             `Client, so skip the AskUserQuestion prompts that would ask for them and ` +
             `route straight into the adventure skill in "new" mode:\n\n` +
-            `- Game root: \`${root}\`\n` +
-            `- Module file: \`${moduleAbs}\`\n` +
-            `- Adventure name (directory slug): \`${name}\`\n\n` +
-            `Then proceed with the rest of the standard new-adventure flow (LOCATIONS.md, ` +
+            promptBullet("Game root", root) +
+            promptBullet("Module file", moduleAbs) +
+            promptBullet("Adventure name (directory slug)", name) +
+            `\nThen proceed with the rest of the standard new-adventure flow (LOCATIONS.md, ` +
             `PARTY.md, SESSION.md, party setup, scene-setting). Use AskUserQuestion as ` +
             `designed for any remaining decisions — those will render as inline forms in ` +
             `the OSR Game Client for the player.`;
@@ -815,7 +852,8 @@ const callbacks = {
         if (!sessionRef) {
             throw new Error("session not ready; please retry in a moment");
         }
-        const dir = await adventureDir(gameRoot, name);
+        const root = ensureAbsolute(gameRoot, "gameRoot");
+        const dir = await adventureDir(root, name);
         const sessionPath = join(dir, "SESSION.md");
         const sessionText = await readTextOrNull(sessionPath);
         const isFirstSession = !sessionText
@@ -823,7 +861,7 @@ const callbacks = {
         const verb = isFirstSession ? "begin" : "resume";
         const mode = isFirstSession ? "new" : "continue";
         const prompt =
-            `${clientContextNote()}\n\n` +
+            agentPromptHeader() +
             `The player has opened the OSR Game Client and wants to ${verb} play. ` +
             `Invoke the **bx-referee:referee** orchestrator skill — its first action ` +
             `loads the constitution and routes into the right sub-skill. The game ` +
@@ -831,9 +869,10 @@ const callbacks = {
             `so skip the AskUserQuestion prompts that would ask for them and route ` +
             `straight into the adventure skill in "${mode}" mode for this specific ` +
             `adventure:\n\n` +
-            `- Game root: \`${ensureAbsolute(gameRoot, "gameRoot")}\`\n` +
-            `- Adventure: \`${name}\`\n` +
-            `- Adventure directory: \`${dir}\`\n\n` +
+            promptBullet("Game root", root) +
+            promptBullet("Adventure", name) +
+            promptBullet("Adventure directory", dir) +
+            `\n` +
             (isFirstSession
                 ? `This adventure has no session log yet, so this is the opening session. ` +
                   `Route to the adventure skill's scene-setting step (or call the ` +
@@ -845,7 +884,7 @@ const callbacks = {
                   `skill matches the current situation).`) +
             ` Use AskUserQuestion as designed.`;
         await sessionRef.send({ prompt });
-        return { ok: true, gameRoot, name, isFirstSession };
+        return { ok: true, gameRoot: root, name, isFirstSession };
     },
 
     async sendChat(prompt) {
@@ -892,35 +931,30 @@ const callbacks = {
     async loadChatTranscript(gameRoot, name, limit = 200) {
         // Returns the last `limit` persisted chat events for an adventure
         // so the page can seed its feed when a player opens or switches
-        // adventures. Applies the same state-delta strip as live events so
-        // historical transcripts (written before the strip existed) still
-        // render cleanly.
+        // adventures. Assistant HTML is regenerated from content on replay
+        // so older transcript HTML cannot bypass the current markdown sanitizer.
         if (!gameRoot || !name) return { events: [] };
         const dir = await sidecarDir(gameRoot, name);
         const file = join(dir, "chat.jsonl");
         const text = await readTextOrNull(file);
         if (!text) return { events: [] };
-        const lines = text.split(/\r?\n/).filter((l) => l.length > 0);
+        const lines = text
+            .split(/\r?\n/)
+            .map((line, index) => ({ line, lineNo: index + 1 }))
+            .filter(({ line }) => line.length > 0);
         const tail = lines.slice(Math.max(0, lines.length - limit));
         const events = [];
-        for (const line of tail) {
+        for (const { line, lineNo } of tail) {
             try {
                 const ev = JSON.parse(line);
-                if (ev?.kind === "assistant.message" && typeof ev.content === "string") {
-                    const cleaned = stripStateDelta(ev.content);
-                    if (!cleaned) continue;
-                    if (cleaned !== ev.content) {
-                        ev.content = cleaned;
-                        try {
-                            ev.html = marked.parse(cleaned, { async: false });
-                        } catch {
-                            ev.html = "";
-                        }
-                    }
+                if (ev?.kind === "assistant.message") {
+                    ev.html = typeof ev.content === "string" ? renderMarkdown(ev.content) : "";
                 }
                 events.push(ev);
-            } catch {
-                // skip corrupt line
+            } catch (e) {
+                process.stderr.write(
+                    `[osr-game-client] corrupt chat transcript line ${file}:${lineNo}: ${e.message}\n`,
+                );
             }
         }
         return { events };
@@ -1008,6 +1042,14 @@ function clientContextNote() {
         `class/alignment selection, equipment, etc.). For simple acknowledgments ` +
         `or freeform questions, prefer plain chat replies over forms.`
     );
+}
+
+function agentPromptHeader() {
+    return `${clientContextNote()}\n\n`;
+}
+
+function promptBullet(label, value) {
+    return `- ${label}: \`${value}\`\n`;
 }
 
 // ---------- session reference holder + event bridge ----------
@@ -1098,7 +1140,7 @@ function toolIcon(toolName) {
     return "•";
 }
 
-function summarizeToolArgs(toolName, args) {
+function summarizeToolArgs(args) {
     if (!args || typeof args !== "object") return "";
     // Trim noisy fields and stringify compactly.
     const trimmed = {};
@@ -1117,69 +1159,69 @@ function summarizeToolArgs(toolName, args) {
     }
 }
 
-// The exploration skill emits a two-line state recap at the end of each
-// turn:
-//
-//     Turn 7 | Hour 2 | Torch: 5 turns left
-//     Location: 14a — The Chamber of the Magi
-//
-// The OSR Game Client already surfaces all of this in the top panel
-// (populated from SESSION.md), so the lines just clutter the chat feed.
-// Strip them from assistant content before rendering. Lines wrapped in a
-// code fence (the SKILL.md sample shows them that way) are handled too —
-// if the fence becomes empty after stripping, drop the fence as well.
-const STATE_DELTA_LINE_RE = /^(?:Turn\s+\d+\s*\|\s*Hour\s+\d+\s*\|\s*\S.*|Location:\s+\S.*)$/;
+function eventData(event, eventType) {
+    const data = event?.data;
+    if (data == null) return {};
+    if (typeof data === "object") return data;
+    console.error(`[osr-game-client] malformed ${eventType}: data`);
+    return {};
+}
 
-function stripStateDelta(content) {
-    if (!content || typeof content !== "string") return content;
-    // Drop code fences whose body is only state-delta lines (or blanks).
-    const fenced = content.replace(
-        /```[^\n]*\n([\s\S]*?)\n```\n?/g,
-        (match, body) => {
-            const lines = body.split(/\r?\n/);
-            const allMatch = lines.every((l) => {
-                const t = l.trim();
-                return t === "" || STATE_DELTA_LINE_RE.test(t);
-            });
-            return allMatch ? "" : match;
-        },
-    );
-    // Drop bare state-delta lines.
-    const kept = fenced.split(/\r?\n/).filter((l) => !STATE_DELTA_LINE_RE.test(l.trim()));
-    return kept.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+function requiredString(data, eventType, field) {
+    const value = data?.[field];
+    if (typeof value === "string") return value;
+    console.error(`[osr-game-client] malformed ${eventType}: ${field}`);
+    return null;
+}
+
+function optionalString(data, eventType, field) {
+    const value = data?.[field];
+    if (value == null) return undefined;
+    if (typeof value === "string") return value;
+    console.error(`[osr-game-client] malformed ${eventType}: ${field}`);
+    return undefined;
+}
+
+function optionalStringOrNull(data, eventType, field) {
+    const value = data?.[field];
+    if (value == null) return null;
+    if (typeof value === "string") return value;
+    console.error(`[osr-game-client] malformed ${eventType}: ${field}`);
+    return null;
+}
+
+function optionalTurnId(event, eventType) {
+    const data = eventData(event, eventType);
+    if (!("turnId" in data) || data.turnId == null) return undefined;
+    if (typeof data.turnId === "string") return data.turnId;
+    console.error(`[osr-game-client] malformed ${eventType}: turnId`);
+    return undefined;
 }
 
 function attachSessionListeners(session) {
     // Full assistant message (with content already rendered as markdown).
     session.on("assistant.message", async (event) => {
-        const data = event.data ?? {};
-        if (!data.content) return;
-        const cleaned = stripStateDelta(data.content);
-        // If the entire message was just the state delta, swallow it
-        // rather than emitting an empty bubble.
-        if (!cleaned) return;
-        let html = "";
-        try {
-            html = marked.parse(cleaned, { async: false });
-        } catch {
-            html = "";
-        }
+        const data = eventData(event, "assistant.message");
+        const content = requiredString(data, "assistant.message", "content");
+        if (content == null) return;
         await pushEventToPage({
             kind: "assistant.message",
-            messageId: data.messageId,
-            content: cleaned,
-            html,
+            messageId: optionalString(data, "assistant.message", "messageId"),
+            content,
+            html: renderMarkdown(content),
             timestamp: event.timestamp,
         });
     });
     // Streaming delta — accumulate by messageId on the page.
     session.on("assistant.message_delta", async (event) => {
-        const data = event.data ?? {};
-        if (!data.delta) return;
+        const data = eventData(event, "assistant.message_delta");
+        const messageId = requiredString(data, "assistant.message_delta", "messageId");
+        const delta = requiredString(data, "assistant.message_delta", "delta");
+        if (messageId == null || delta == null) return;
         await pushEventToPage({
             kind: "assistant.message_delta",
-            messageId: data.messageId,
-            delta: data.delta,
+            messageId,
+            delta,
             timestamp: event.timestamp,
         });
     });
@@ -1188,41 +1230,44 @@ function attachSessionListeners(session) {
     // anywhere else). Pass `source` through so the page can hide
     // skill-injected synthetic messages by default. We also tag prompts the
     // OSR Game Client itself injected (Play / Resume / + New) so they don't
-    // clutter the chat feed in non-verbose mode. Both the new
-    // `[osr-game-client]` prefix and the legacy `[bx-referee dashboard]`
-    // prefix are recognized so old prompts replayed from history are still
-    // hidden.
+    // clutter the chat feed in non-verbose mode.
     session.on("user.message", async (event) => {
-        const data = event.data ?? {};
-        if (!data.content) return;
-        const isClientInjected = typeof data.content === "string"
-            && (data.content.startsWith("[osr-game-client]")
-                || data.content.startsWith("[bx-referee dashboard]"));
+        const data = eventData(event, "user.message");
+        const content = requiredString(data, "user.message", "content");
+        if (content == null) return;
+        const isClientInjected = content.startsWith("[osr-game-client]");
+        const source = optionalStringOrNull(data, "user.message", "source")
+            ?? (isClientInjected ? "client-internal" : null);
         await pushEventToPage({
             kind: "user.message",
-            content: data.content,
-            source: data.source ?? (isClientInjected ? "client-internal" : null),
+            content,
+            source,
             timestamp: event.timestamp,
         });
     });
     session.on("tool.execution_start", async (event) => {
-        const data = event.data ?? {};
+        const data = eventData(event, "tool.execution_start");
+        const toolCallId = requiredString(data, "tool.execution_start", "toolCallId");
+        if (toolCallId == null) return;
+        const toolName = optionalString(data, "tool.execution_start", "toolName") ?? "";
         await pushEventToPage({
             kind: "tool.start",
-            toolCallId: data.toolCallId,
-            toolName: data.toolName,
-            icon: toolIcon(data.toolName),
-            argsSummary: summarizeToolArgs(data.toolName, data.arguments),
+            toolCallId,
+            toolName,
+            icon: toolIcon(toolName),
+            argsSummary: summarizeToolArgs(data.arguments),
             timestamp: event.timestamp,
         });
     });
     session.on("tool.execution_complete", async (event) => {
-        const data = event.data ?? {};
+        const data = eventData(event, "tool.execution_complete");
+        const toolCallId = requiredString(data, "tool.execution_complete", "toolCallId");
+        if (toolCallId == null) return;
         await pushEventToPage({
             kind: "tool.complete",
-            toolCallId: data.toolCallId,
+            toolCallId,
             success: data.success !== false,
-            errorMessage: data.error?.message,
+            errorMessage: typeof data.error?.message === "string" ? data.error.message : undefined,
             timestamp: event.timestamp,
         });
     });
@@ -1231,14 +1276,14 @@ function attachSessionListeners(session) {
     session.on("assistant.turn_start", async (event) => {
         await pushEventToPage({
             kind: "thinking.start",
-            turnId: event.data?.turnId,
+            turnId: optionalTurnId(event, "assistant.turn_start"),
             timestamp: event.timestamp,
         });
     });
     session.on("assistant.turn_end", async (event) => {
         await pushEventToPage({
             kind: "thinking.end",
-            turnId: event.data?.turnId,
+            turnId: optionalTurnId(event, "assistant.turn_end"),
             timestamp: event.timestamp,
         });
     });
