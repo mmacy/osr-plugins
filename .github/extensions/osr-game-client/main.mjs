@@ -947,8 +947,11 @@ const callbacks = {
         for (const { line, lineNo } of tail) {
             try {
                 const ev = JSON.parse(line);
+                if (ev?.kind === "assistant.message" || ev?.kind === "user.message") {
+                    if (typeof ev.content !== "string" || ev.content === "") continue;
+                }
                 if (ev?.kind === "assistant.message") {
-                    ev.html = typeof ev.content === "string" ? renderMarkdown(ev.content) : "";
+                    ev.html = renderMarkdown(ev.content);
                 }
                 events.push(ev);
             } catch (e) {
@@ -1200,10 +1203,13 @@ function optionalTurnId(event, eventType) {
 
 function attachSessionListeners(session) {
     // Full assistant message (with content already rendered as markdown).
+    // Tool-only turns can produce assistant.message events with no prose
+    // (missing or empty content). Drop those so the chat feed doesn't grow
+    // empty bubbles; they're also not worth persisting to the transcript.
     session.on("assistant.message", async (event) => {
         const data = eventData(event, "assistant.message");
-        const content = requiredString(data, "assistant.message", "content");
-        if (content == null) return;
+        const content = optionalString(data, "assistant.message", "content");
+        if (!content) return;
         await pushEventToPage({
             kind: "assistant.message",
             messageId: optionalString(data, "assistant.message", "messageId"),
@@ -1233,8 +1239,8 @@ function attachSessionListeners(session) {
     // clutter the chat feed in non-verbose mode.
     session.on("user.message", async (event) => {
         const data = eventData(event, "user.message");
-        const content = requiredString(data, "user.message", "content");
-        if (content == null) return;
+        const content = optionalString(data, "user.message", "content");
+        if (!content) return;
         const isClientInjected = content.startsWith("[osr-game-client]");
         const source = optionalStringOrNull(data, "user.message", "source")
             ?? (isClientInjected ? "client-internal" : null);

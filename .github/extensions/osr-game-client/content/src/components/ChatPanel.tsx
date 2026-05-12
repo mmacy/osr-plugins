@@ -548,6 +548,7 @@ function FeedItemView({ item, onRetry, onDismiss }: { item: FeedItem; onRetry: (
         );
     }
     if (item.kind === "assistant") {
+        if (!item.html && !item.text) return null;
         return (
             <div className="msg msg-assistant">
                 {item.html ? (
