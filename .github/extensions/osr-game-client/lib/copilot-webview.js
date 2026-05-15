@@ -3,7 +3,7 @@
 //
 // Public API:
 //   bootstrap(extDir)
-//       Installs npm deps if package-lock is missing/stale. Logs via the SDK.
+//       Installs npm deps and builds content assets when needed. Logs via the SDK.
 //   new CopilotWebview({ extensionName, contentDir, callbacks?, title?, width?, height? })
 //       One window per instance. Properties / methods:
 //         .tools                 → array of tool defs (`<extensionName>_show`,
@@ -19,7 +19,7 @@
 import { spawn, execSync } from "node:child_process";
 import { createServer } from "node:http";
 import { readFile, rm } from "node:fs/promises";
-import { existsSync, statSync } from "node:fs";
+import { existsSync, readdirSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { extname, join, normalize, sep, isAbsolute, resolve } from "node:path";
 import { randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
@@ -100,15 +100,83 @@ function staticHandler(rootDir) {
     };
 }
 
+function mtimeOrZero(path) {
+    return existsSync(path) ? statSync(path).mtimeMs : 0;
+}
+
+function newestMtime(path) {
+    if (!existsSync(path)) return 0;
+    const stat = statSync(path);
+    if (!stat.isDirectory()) return stat.mtimeMs;
+    let newest = stat.mtimeMs;
+    for (const entry of readdirSync(path, { withFileTypes: true })) {
+        newest = Math.max(newest, newestMtime(join(path, entry.name)));
+    }
+    return newest;
+}
+
+function needsNpmInstall(dir) {
+    const pkg = join(dir, "package.json");
+    if (!existsSync(pkg)) return false;
+    const lock = join(dir, "package-lock.json");
+    const nodeModulesLock = join(dir, "node_modules", ".package-lock.json");
+    if (!existsSync(nodeModulesLock)) return true;
+    return Math.max(mtimeOrZero(pkg), mtimeOrZero(lock)) > mtimeOrZero(nodeModulesLock);
+}
+
+function needsContentBuild(contentDir) {
+    const pkg = join(contentDir, "package.json");
+    if (!existsSync(pkg)) return false;
+    const bundle = join(contentDir, "dist", "main.js");
+    if (!existsSync(bundle)) return true;
+    const inputMtime = Math.max(
+        newestMtime(join(contentDir, "src")),
+        mtimeOrZero(pkg),
+        mtimeOrZero(join(contentDir, "package-lock.json")),
+    );
+    return inputMtime > mtimeOrZero(bundle);
+}
+
+function runNpm(command, cwd) {
+    try {
+        execSync(command, { cwd, stdio: "pipe", encoding: "utf8" });
+    } catch (e) {
+        const detail = [e.stdout, e.stderr].filter(Boolean).join("\n").trim();
+        throw new Error(`${command} failed in ${cwd}${detail ? `:\n${detail}` : ""}`);
+    }
+}
+
 export async function bootstrap(extDir) {
-    const pkg = join(extDir, "package.json");
-    const lock = join(extDir, "package-lock.json");
-    if (existsSync(lock) && statSync(pkg).mtimeMs <= statSync(lock).mtimeMs) return;
-    const session = await joinSession();
-    await session.log("Installing extension dependencies…");
-    execSync("npm install --no-audit --no-fund", { cwd: extDir, stdio: "ignore" });
-    await session.log("Dependencies installed.");
-    await session.disconnect();
+    let session = null;
+    const getSession = async () => {
+        session ??= await joinSession();
+        return session;
+    };
+    try {
+        if (needsNpmInstall(extDir)) {
+            const s = await getSession();
+            await s.log("Installing extension dependencies...");
+            runNpm("npm install --no-audit --no-fund", extDir);
+            await s.log("Extension dependencies installed.");
+        }
+
+        const contentDir = join(extDir, "content");
+        if (needsNpmInstall(contentDir)) {
+            const s = await getSession();
+            await s.log("Installing client dependencies...");
+            runNpm("npm install --include=dev --no-audit --no-fund", contentDir);
+            await s.log("Client dependencies installed.");
+        }
+
+        if (needsContentBuild(contentDir)) {
+            const s = await getSession();
+            await s.log("Building OSR Game Client...");
+            runNpm("npm run build", contentDir);
+            await s.log("OSR Game Client built.");
+        }
+    } finally {
+        if (session) await session.disconnect();
+    }
 }
 
 async function showWebview({ dir, title = "Copilot Webview", width = 900, height = 700, callbacks = {} } = {}) {

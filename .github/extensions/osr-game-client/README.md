@@ -22,21 +22,13 @@ OSR Game Client is a Copilot CLI extension that spawns a native webview for play
 
 ## Run from this repository
 
-Build the React client once before launching from a fresh checkout:
-
-```bash
-cd .github/extensions/osr-game-client/content
-npm install
-npm run build
-```
-
 Start Copilot CLI from the repository root so it can load the project extension, then run:
 
 ```text
 /osr-game-client
 ```
 
-On first launch, the setup checklist asks for:
+On first launch, the extension installs any missing Node dependencies and builds the bundled client assets if needed. The setup checklist then asks for:
 
 1. **Game directory**: the root that contains `adventures/` and `characters/`.
 2. **Referee plugin location**: the plugin folder containing the referee skills, utility scripts, and rules references used by the active OSR plugin. Auto-detection handles the common local checkout and installed-plugin paths.
