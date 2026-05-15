@@ -1,6 +1,6 @@
 # OSR plugins
 
-A plugin marketplace for AI-powered Old-School Renaissance tabletop RPG tools for [Claude Code](https://code.claude.com/docs).
+A plugin marketplace for AI-powered Old-School Renaissance tabletop RPG tools for [Copilot CLI](https://docs.github.com/copilot/how-tos/copilot-cli), [Claude Code](https://code.claude.com/docs), and other harnesses that can use [agent skills](https://agentskills.io/home).
 
 ## Install
 
