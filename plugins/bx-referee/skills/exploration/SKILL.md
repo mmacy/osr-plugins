@@ -133,16 +133,7 @@ Casting a spell takes a full turn (the caster is concentrating on the ritual).
   - If encumbrance bracket changes, announce the new movement rate
   - Party movement rate is the slowest member's rate
 
-### 5. Display state delta
-
-Only show what changed. Compact format:
-
-```
-Turn 7 | Hour 2 | Torch: 5 turns left
-Location: 14a — The Chamber of the Magi
-```
-
-### 6. Loop
+### 5. Loop
 
 Return to step 1.
 
