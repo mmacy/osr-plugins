@@ -41,3 +41,13 @@ Type `Let's play OSE.` or `/bx-referee:referee` to start playing.
 </td>
 </tr>
 </table>
+
+## Extensions
+
+### [OSR Game Client](.github/extensions/osr-game-client/README.md)
+
+A native Copilot CLI webview for OSR referee plugins in this repository. It brings the table state, party roster, locations, dice, rules lookup, and referee chat into one desktop window.
+
+```console
+/osr-game-client
+```
