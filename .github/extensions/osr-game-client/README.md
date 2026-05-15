@@ -1,6 +1,6 @@
 # OSR Game Client
 
-OSR Game Client is a native Copilot CLI webview for playing OSR adventures with referee plugins from this repository. It keeps the table state, party roster, locations, dice, rules lookup, and referee chat in one desktop window while the agent runs the game.
+OSR Game Client is a Copilot CLI extension that spawns a native webview for playing OSR adventures with referee plugins from this repository. It keeps the table state, party roster, locations, dice, rules lookup, and referee chat in one desktop window while the agent runs the game.
 
 ![OSR Game Client showing the session dashboard and referee chat](assets/screenshot.png)
 
