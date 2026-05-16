@@ -216,3 +216,5 @@ characters/*
 !characters/demo-*.md
 adventures/*
 !adventures/demo-adventure/
+campaigns/*
+!campaigns/demo-campaign/

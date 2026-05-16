@@ -6,12 +6,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 OSR Plugins is a plugin marketplace for AI-powered Old-School Renaissance tabletop RPG tools. It uses the Claude Code plugin system to deliver modular AI skills that act as a tabletop RPG referee.
 
-Currently ships one plugin: **B/X Referee** (`plugins/bx-referee/`), which runs Old-School Essentials sessions from adventure module files.
+Ships two plugins:
+
+- **B/X Referee** (`plugins/bx-referee/`) — runs Old-School Essentials sessions from adventure module files.
+- **Ironsworn Referee** (`plugins/ironsworn-referee/`) — runs solo Ironsworn sessions with a deterministic Python CLI for all mechanics and an LLM co-author for fiction. No prepared module needed.
 
 ## Running locally
 
 ```bash
 claude --plugin-dir ./plugins/bx-referee
+# or
+claude --plugin-dir ./plugins/ironsworn-referee
 ```
 
 ## Running Python utilities
@@ -33,9 +38,11 @@ No `pyproject.toml` exists — these are standalone scripts, not a Python packag
 - Each plugin has a `.claude-plugin/plugin.json` with metadata and a `skills/` directory
 - When changes are made to a plugin, bump its version in `.github/plugin/marketplace.json` only. Do **not** set the version in `.claude-plugin/plugin.json` — for relative-path plugins, the marketplace entry is the version authority. Setting it in both causes update detection to fail.
 
-### B/X Referee skill graph
+### Skill graphs
 
-Skills are specialized LLM prompts defined in `SKILL.md` files with YAML frontmatter (`name`, `description`, `allowed-tools`). They call each other via the `Skill` tool:
+Skills are specialized LLM prompts defined in `SKILL.md` files with YAML frontmatter (`name`, `description`, `allowed-tools`). They call each other via the `Skill` tool.
+
+**B/X Referee** (hidden-module referee model):
 
 ```
 referee (orchestrator)
@@ -46,33 +53,53 @@ referee (orchestrator)
 │           └── combat (initiative, attacks, morale)
 ```
 
-- `referee` routes based on game context — it's the entry point
-- `encounter` produces a structured handoff block that `combat` consumes
-- `exploration` and `adventure` manage persistent state files
+- `encounter` produces a structured handoff block that `combat` consumes.
+- `exploration` and `adventure` manage persistent state files.
 
-### SRD reference system
+**Ironsworn Referee** (co-author + deterministic-CLI model):
 
-Pre-cached OSE SRD (316 Markdown files) in `plugins/bx-referee/skills/referee/references/srd/`. Three index maps enable fast lookups without network calls:
+```
+referee (orchestrator)
+├── world      (Your Truths setup)
+├── character  (PC creation: stats, assets, vow, bonds)
+├── play       (main loop; owns combat AND journey lifecycle)
+├── oracle     (table + yes/no oracle rolls)
+└── session    (save/resume + roll-log audit trail)
+```
 
-- `srd_map.md` — rules lookup index
-- `srd_monsters.md` — monster lookup index
-- `srd_spells.md` — spell lookup index
+- Mechanics are deterministic via `iron.py` — the agent never invents rolls.
+- The `play` skill owns the lifecycles of journeys and fights (no separate combat/journey skills).
+- Vendored Datasworn YAML at `plugins/ironsworn-referee/skills/referee/references/datasworn/` (pinned to `v0.1.0-prerelease`, mixed CC BY 4.0 / CC BY-NC-SA 4.0).
+
+### SRD reference systems
+
+**B/X Referee** has a pre-cached OSE SRD (316 Markdown files) in `plugins/bx-referee/skills/referee/references/srd/` with three index maps (`srd_map.md`, `srd_monsters.md`, `srd_spells.md`) for fast lookups.
+
+**Ironsworn Referee** has vendored Datasworn YAML at `plugins/ironsworn-referee/skills/referee/references/datasworn/` consumed via the `iron.py` CLI (no static index maps — `iron list <type>` enumerates at runtime).
 
 ### Game directory
 
-Player data is stored in a **game directory** chosen by the user at session start (e.g. `~/osr-games`). Skills must never write game files to the plugin cache directory. The referee skill asks for this path and passes it to all downstream skills. SESSION.md records it so skills can resolve paths without re-asking.
+Player data is stored in a **game directory** chosen by the user at session start (e.g. `~/osr-games`). Skills must never write game files to the plugin cache directory. Each referee skill asks for this path and passes it to all downstream skills. SESSION.md records it so skills can resolve paths without re-asking.
 
 ```
 <game-root>/
-├── adventures/<name>/
-│   ├── PARTY.md       — canonical party roster (stats, HP, equipment, XP)
-│   ├── SESSION.md     — session timeline, exploration log, current situation
-│   └── LOCATIONS.md   — indexed keyed locations with module file paths
-└── characters/
-    └── <name>-<class>.md
+├── adventures/<name>/                  (B/X Referee)
+│   ├── PARTY.md
+│   ├── SESSION.md
+│   └── LOCATIONS.md
+├── characters/<name>-<class>.md        (B/X Referee)
+└── campaigns/<name>/                   (Ironsworn Referee)
+    ├── CHARACTER.md
+    ├── VOWS.md
+    ├── BONDS.md
+    ├── TRUTHS.md
+    ├── JOURNEYS.md  (created when needed)
+    ├── FIGHTS.md    (created when needed)
+    ├── SESSION.md
+    └── JOURNAL.md   (optional)
 ```
 
-The repo's gitignore covers `adventures/` and `characters/` except demo content.
+The repo's gitignore covers `adventures/`, `characters/`, and `campaigns/` except demo content.
 
 ## Skill authoring conventions
 
@@ -91,7 +118,16 @@ Each skill's README.md documents its purpose and usage for end users; the SKILL.
 
 ## Licensing boundaries
 
+**B/X Referee:**
+
 - **Product Identity:** SKILL.md prompts, Python scripts, index maps, "B/X Referee" name
-- **Open Game Content (OGL v1.0a):** SRD rules text in `references/srd/`
+- **Open Game Content (OGL v1.0a):** SRD rules text in `plugins/bx-referee/skills/referee/references/srd/`
 
 Do not mix original prompt content into SRD files or vice versa.
+
+**Ironsworn Referee:**
+
+- **Vendored Ironsworn content:** Datasworn YAML in `plugins/ironsworn-referee/skills/referee/references/datasworn/` — mixed CC BY 4.0 and CC BY-NC-SA 4.0 per the `LICENSE.md` in that directory. Distributed overall as CC BY-NC-SA 4.0 (most restrictive constraint applies).
+- **Project code:** SKILL.md prompts, `iron.py`, constitution, disambiguation guide. Distributed under CC BY-NC-SA 4.0 for compatibility with the vendored content.
+
+Do not edit the vendored Datasworn YAML — to update, re-vendor from upstream (see `plugins/ironsworn-referee/skills/referee/references/datasworn/LICENSE.md` for the re-vendor procedure).
