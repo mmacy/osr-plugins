@@ -12,6 +12,12 @@
       "source": "./plugins/bx-referee",
       "description": "Run Old-School Essentials tabletop RPG sessions with an AI referee.",
       "version": "0.1.4"
+    },
+    {
+      "name": "ironsworn-referee",
+      "source": "./plugins/ironsworn-referee",
+      "description": "Run Ironsworn solo or co-op RPG sessions with an AI co-author.",
+      "version": "0.1.0"
     }
   ]
 }

@@ -1,0 +1,18 @@
+{
+  "name": "ironsworn-referee",
+  "description": "Ironsworn Referee — run Ironsworn solo or co-op RPG sessions with an AI co-author",
+  "author": {
+    "name": "Marsh Macy",
+    "url": "https://github.com/mmacy"
+  },
+  "repository": "https://github.com/mmacy/osr-plugins",
+  "license": "CC-BY-NC-SA-4.0",
+  "keywords": [
+    "ironsworn",
+    "pbta",
+    "tabletop-rpg",
+    "solo-rpg",
+    "co-op-rpg",
+    "shawn-tomkin"
+  ]
+}

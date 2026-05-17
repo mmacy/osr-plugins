@@ -42,6 +42,16 @@ Type `Let's play OSE.` or `/bx-referee:referee` to start playing.
 </tr>
 </table>
 
+### [Ironsworn Referee](plugins/ironsworn-referee/README.md)
+
+A solo/co-op play tool for [Ironsworn](https://ironswornrpg.com) by Shawn Tomkin. The agent identifies which move triggers from your fiction, calls a deterministic Python CLI for every dice roll and oracle, and narrates outcomes from the move's own text. No prepared module needed — Ironsworn's content emerges from your character's vows and oracle rolls.
+
+```console
+/plugin install ironsworn-referee@osr-plugins
+```
+
+Type `Let's play Ironsworn.` or `/ironsworn-referee:referee` to start playing.
+
 ## Extensions
 
 ### [OSR Game Client](.github/extensions/osr-game-client/README.md)
