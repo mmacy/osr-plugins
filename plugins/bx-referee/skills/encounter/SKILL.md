@@ -22,6 +22,7 @@ The [referee's constitution](../referee/references/constitution.md) governs all 
 - **SRD map**: `plugins/bx-referee/skills/referee/references/srd_map.md` (rules, classes, equipment, treasure)
 - **SRD monsters**: `plugins/bx-referee/skills/referee/references/srd_monsters.md`
 - **SRD spells**: `plugins/bx-referee/skills/referee/references/srd_spells.md`
+- **SRD magic items**: `plugins/bx-referee/skills/referee/references/srd_magic_items.md`
 
 ```bash
 uv run plugins/bx-referee/skills/referee/scripts/roll.py "2d6"

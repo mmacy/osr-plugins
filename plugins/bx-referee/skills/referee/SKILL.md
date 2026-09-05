@@ -63,11 +63,12 @@ uv run plugins/bx-referee/skills/referee/scripts/roll.py "<expr>"
 
 ### SRD rules lookup
 
-To look up any OSE rule, monster, or spell:
+To look up any OSE rule, monster, spell, or magic item:
 
 1. **Read the map**: `plugins/bx-referee/skills/referee/references/srd_map.md` — covers rules, classes, equipment, treasure, referee resources
 2. **For monsters**: Read `plugins/bx-referee/skills/referee/references/srd_monsters.md`
 3. **For spells**: Read `plugins/bx-referee/skills/referee/references/srd_spells.md`
-4. **Read the file** listed in the map using the Read tool
+4. **For magic items**: Read `plugins/bx-referee/skills/referee/references/srd_magic_items.md`
+5. **Read the file** listed in the map using the Read tool
 
-The maps contain brief descriptions so you can identify the right file without opening it. All 316 SRD pages are pre-cached as Markdown in `references/srd/`.
+The maps contain brief descriptions so you can identify the right file without opening it. All 412 SRD pages are pre-cached as Markdown in `references/srd/`.

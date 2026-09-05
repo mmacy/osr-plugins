@@ -1,11 +1,12 @@
 # OSE SRD reference map
 
-Use this map to find the right reference file to Read. For monsters and spells, see the submaps linked below.
+Use this map to find the right reference file to Read. For monsters, spells, and magic items, see the submaps linked below.
 
 ## Submaps
 
 - [Monsters](srd_monsters.md) — Complete bestiary (~140 creatures, Acolyte to Zombie)
 - [Spells](srd_spells.md) — All cleric (levels 1-5) and magic-user (levels 1-6) spells
+- [Magic Items](srd_magic_items.md) — Individual item descriptions (potions, rings, rods/staves/wands, misc, sentient sword powers)
 
 ## Character creation
 
@@ -18,6 +19,7 @@ Use this map to find the right reference file to Read. For monsters and spells, 
 
 ## Character classes
 
+- [Character Classes](srd/Character_Classes.md) — Overview of the seven classes and what each one is
 - [Cleric](srd/Cleric.md) — HD 1d6, blunt weapons, divine spells (from level 2), turn undead table
 - [Dwarf](srd/Dwarf.md) — HD 1d8, max level 12, infravision, detect construction tricks/traps
 - [Elf](srd/Elf.md) — HD 1d6, max level 10, arcane spells, detect secret doors, ghoul immunity
@@ -35,10 +37,14 @@ Use this map to find the right reference file to Read. For monsters and spells, 
 - [Land Vehicles](srd/Land_Vehicles.md) — Carts, wagons, chariots
 - [Water Vessels](srd/Water_Vessels.md) — Ships, boats — stats, crew, cargo, costs
 - [Rules for Vehicles](srd/Rules_for_Vehicles.md) — Vehicle combat, damage, repairs
+- [Hirelings](srd/Hirelings.md) — Umbrella page: retainers vs mercenaries vs specialists, locating hirelings
 - [Mercenaries](srd/Mercenaries.md) — Hiring soldiers, troop types, costs, morale
 - [Retainers](srd/Retainers.md) — Hiring NPCs, loyalty, limits by CHA
 - [Specialists](srd/Specialists.md) — Hirelings (armourers, engineers, sages, etc.)
 - [Strongholds](srd/Strongholds.md) — Construction costs, domains, followers
+- [Construction](srd/Construction.md) — Building procedure: permission, clearing land, engineers, 1 day per 500gp; town builds 60-80% cheaper
+- [Structures](srd/Structures.md) — Structure price table, non-standard tower/wall costs, interior features
+- [Domain Management](srd/Domain_Management.md) — Patrolling cleared lands, attracting settlers, 10gp/settler/year tax
 
 ## Adventuring rules
 
@@ -59,16 +65,21 @@ Use this map to find the right reference file to Read. For monsters and spells, 
 - [Evasion and Pursuit](srd/Evasion_and_Pursuit.md) — Dungeon/wilderness/waterborne evasion rules, pursuit procedures
 - [Other Combat Issues](srd/Other_Combat_Issues.md) — Attacking from behind, blindness, subduing, unarmed, water combat
 - [Checks, Damage, Saves](srd/Checks%2C_Damage%2C_Saves.md) — Ability checks, damage/healing/death, saving throws (index page)
+- [Ability Checks](srd/Ability_Checks.md) — Roll 1d20 under the ability score; ±4 difficulty modifiers, 1 succeeds and 20 fails
+- [Damage, Healing, and Death](srd/Damage%2C_Healing%2C_and_Death.md) — Death at 0 hp, item destruction, 1d3 hp per day of rest
 
 ## Magic
 
-- [Rules of Magic](srd/Rules_of_Magic.md) — Memorizing, casting, spell effects, arcane vs divine magic, reversible spells
+- [Spells](srd/Spells.md) — Memorizing, casting, spell effects, arcane vs divine, reversed spells, deity disfavour
+- [Rules of Magic](srd/Rules_of_Magic.md) — Same content as Spells above (the SRD transcludes it); read either one, not both
 - [Spell Books](srd/Spell_Books.md) — Beginning spells, adding spells, lost/captured spell books
 - [Magical Research](srd/Magical_Research.md) — Creating new spells (cost/time), creating magic items, failure chance
 - [Cleric Spells](srd/Cleric_Spells.md) — Spell list index (levels 1-5)
 - [Magic-User Spells](srd/Magic-User_Spells.md) — Spell list index (levels 1-6)
 
 ## Treasure and magic items
+
+For individual magic item descriptions, see the [magic items submap](srd_magic_items.md). The pages below are the random-generation tables.
 
 - [Placing Treasure](srd/Placing_Treasure.md) — Random rolling vs referee choice, balance guidelines
 - [Treasure Types](srd/Treasure_Types.md) — Types A-V with percentages, dice, coin conversion rates
@@ -92,6 +103,7 @@ Use this map to find the right reference file to Read. For monsters and spells, 
 - [Adventuring Parties](srd/Adventuring_Parties.md) — NPC adventurer generation tables (class, level, alignment)
 - [General](srd/General.md) — Monster encounter rules, dungeon stocking, NPC parties
 - [Monster Descriptions](srd/Monster_Descriptions.md) — Monster stat block format, game statistics explained
+- [Game Statistics (Monsters)](srd/Game_Statistics_%28Monsters%29.md) — AC, HD, Att, SV, THAC0, MV, ML, AL, XP, NA, TT explained
 
 ## Referee resources
 
