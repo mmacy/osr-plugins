@@ -41,7 +41,7 @@ The referee is governed by an inviolable [constitution](skills/referee/reference
 
 ### SRD references
 
-The plugin includes a **pre-cached copy of the [OSE SRD](https://oldschoolessentials.necroticgnome.com/srd/)** (316 pages) as Markdown reference files. A [docs map](skills/referee/references/srd_map.md) system with [monster](skills/referee/references/srd_monsters.md) and [spell](skills/referee/references/srd_spells.md) submaps lets each skill find and read the exact rule it needs without network calls or script execution.
+The plugin includes a **pre-cached copy of the [OSE SRD](https://oldschoolessentials.necroticgnome.com/srd/)** (412 pages) as Markdown reference files. A [docs map](skills/referee/references/srd_map.md) system with [monster](skills/referee/references/srd_monsters.md), [spell](skills/referee/references/srd_spells.md), and [magic item](skills/referee/references/srd_magic_items.md) submaps lets each skill find and read the exact rule it needs without network calls or script execution.
 
 ### Adventure flow
 

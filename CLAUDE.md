@@ -73,7 +73,7 @@ referee (orchestrator)
 
 ### SRD reference systems
 
-**B/X Referee** has a pre-cached OSE SRD (316 Markdown files) in `plugins/bx-referee/skills/referee/references/srd/` with three index maps (`srd_map.md`, `srd_monsters.md`, `srd_spells.md`) for fast lookups.
+**B/X Referee** has a pre-cached OSE SRD (412 Markdown files) in `plugins/bx-referee/skills/referee/references/srd/` with four index maps (`srd_map.md`, `srd_monsters.md`, `srd_spells.md`, `srd_magic_items.md`) for fast lookups.
 
 **Ironsworn Referee** has vendored Datasworn YAML at `plugins/ironsworn-referee/skills/referee/references/datasworn/` consumed via the `iron.py` CLI (no static index maps — `iron list <type>` enumerates at runtime).
 
